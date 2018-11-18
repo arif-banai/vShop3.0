@@ -56,10 +56,10 @@ public class Buy implements CommandExecutor {
 				return false;
 			}
 
-			int amount = NumberUtils.getInteger(args[0]);
+			int desiredAmount = NumberUtils.getInteger(args[0]);
 
 			// Check if the amount is invalid
-			if (amount <= 0) {
+			if (desiredAmount <= 0) {
 				ChatUtils.sendError(player, "Invalid amount");
 				return false;
 			}
@@ -119,10 +119,12 @@ public class Buy implements CommandExecutor {
 			// Used to keep track of how much the buyer has spent in total
 			double spent = 0;
 
+			//TODO player wanted 10 items, ends up buying all items
+			
 			for (Offer o : offers) {
 				if (o.price <= maxPrice) {
 					// Skip offer if the seller is the player attempting to purchase
-					if (o.sellerUUID.equalsIgnoreCase(player.getUniqueId().toString())) {
+					if (o.sellerUUID.equals(player.getUniqueId().toString())) {
 						continue;
 					}
 
@@ -131,30 +133,17 @@ public class Buy implements CommandExecutor {
 					int canBuy;
 					double cost;
 					
-					if (amount - bought >= o.amount) {
+					if (desiredAmount - bought >= o.amount) {
 						canBuy = o.amount;
 						cost = o.price * canBuy;
 
-						// TODO I think there is a better way of doing this check
-						// Check if player has at least enough money
-						if (Main.economy.getBalance(player) >= cost) {
-							canBuy = Math.min((int) (Main.economy.getBalance(player) / o.price),o.amount);
-
-							// If canBuy is less than 1, the player doesn't have enough money
-							if (canBuy < 1) {
-								ChatUtils.sendError(player, "Ran out of money!");
-								break;
-							}
-
-							// Calculate the cost of buying the current offer
-							cost = canBuy * o.price;
+						// Check if player does not have enough money
+						if (Main.economy.getBalance(player) < cost) {
+								ChatUtils.sendError(player, "You do not have enough money!");
+								return false;
 						}
 
-						// Increment bought and spent
-						bought += canBuy;
-						spent += cost;
-
-						// Because (amount - bought) >= o.amount, the offer will not have any items left
+						// Because (desiredAmount - bought) >= o.amount, the offer will not have any items left
 						// This means that the player bought the whole order of items
 						// So we must delete the offer from the database
 
@@ -170,26 +159,21 @@ public class Buy implements CommandExecutor {
 
 						
 					} else {
-						// This executes if the offer has more items than can possibly be bought
-						canBuy = amount - bought;
+						
+						canBuy = desiredAmount - bought;
 						cost = o.price * canBuy;
 
-						if (Main.economy.getBalance(player) >= cost) {
-							canBuy = Math.min((int) (Main.economy.getBalance(player) / o.price),o.amount);
-							cost = canBuy * o.price;
-
-							if (canBuy < 1) {
-								ChatUtils.sendError(player, "Ran out of money!");
-								break;
-							}
+						if (Main.economy.getBalance(player) < cost) {
+							ChatUtils.sendError(player, "Ran out of money!");
+							return false;
 						}
-
-						bought += canBuy;
-						spent += cost;
 
 						// amountLeft will always be greater than or equal to 1
 						int amountLeft = o.amount - canBuy;
 
+						// This executes if (desiredAmount - bought) < o.amount
+						// Therefore the offer will have some left over items after the player completes their purchase
+						// There we must not delete the offer, but update the amount in the existing offer
 						try {
 							plugin.getSQL().updateQuantity(o.sellerUUID, o.textID, amountLeft);
 						} catch (SQLException | ClassNotFoundException e) {
@@ -202,14 +186,18 @@ public class Buy implements CommandExecutor {
 
 					}
 					
-					// Get the seller Player, however, the player might be offline, so create
-					// OfflinePlayer
+					// Increment bought and spent
+					bought += canBuy;
+					spent += cost;
+					
+					// Get the seller Player, however, the player might be offline
 					OfflinePlayer seller = plugin.getServer().getOfflinePlayer(UUID.fromString(o.sellerUUID));
 
 					// Send money from the buyer to the seller
 					Main.economy.withdrawPlayer(player, cost);
 					Main.economy.depositPlayer(seller, cost);
 
+					// Send a message notifying the seller of a sale if they are online
 					if (seller.isOnline()) {
 						
 						Player onlineSeller = (Player) seller;
@@ -220,6 +208,7 @@ public class Buy implements CommandExecutor {
 										+ " for " + ChatUtils.formatPrice(cost));
 					}
 
+					// Record the transaction
 					Transaction t = new Transaction(o.sellerUUID, player.getUniqueId().toString(), o.textID, canBuy, cost);
 					
 					try {
@@ -232,7 +221,8 @@ public class Buy implements CommandExecutor {
 						return false;
 					}
 
-					if (bought >= amount) {
+					// Stop if the player has bought enough items
+					if (bought >= desiredAmount) {
 						break;
 					}
 				}
@@ -241,8 +231,10 @@ public class Buy implements CommandExecutor {
 			// Create a new ItemStack with the item purchased, and the amount bought
 			ItemStack purchasedItem = new ItemStack(item, bought);
 
+			// Add the items to the players inventory, and prepare any items that could not be added
 			HashMap<Integer, ItemStack> leftOver = player.getInventory().addItem(purchasedItem);
 			
+			// Drop all items not added to Inventory if there are any
 			for(ItemStack leftOverItem : leftOver.values()) {
 				player.getWorld().dropItem(player.getLocation(), leftOverItem);
 			}

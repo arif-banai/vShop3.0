@@ -1,13 +1,12 @@
 # vShop3.0
 Check out the plugin on Spigot: https://www.spigotmc.org/resources/vshop-remastered.62508/
+
 vShop updated for Spigot api-version 1.13
 
-This is a Spigot plugin for servers running spigot 1.13+
-
-It uses the new item-ids introduced in Minecraft 1.13
-
-Dependencies: IDLogger https://github.com/arif-banai/IDLogger
-              Vault    https://www.spigotmc.org/resources/vault.34315/
+Dependencies: 
+  IDLogger https://github.com/arif-banai/IDLogger
+  
+  Vault    https://www.spigotmc.org/resources/vault.34315/
 
 This plugin allows players to buy and sell from each other using only commands to make buying and selling on your economy server quick and efficient!
 
@@ -15,5 +14,4 @@ The plugin uses a MySQL or SQLite database to store Offers and Transactions. You
 
 By default, all offers made by players are broadcast to every player on the server. This can also be configured in the config.yml
 
-This uses Minecraft 1.13 item-ids for item names.
-Please reference this website (linked) for item names: https://minecraftitemids.com/
+Please reference this website (linked) for Minecraft 1.13 item names: https://minecraftitemids.com/

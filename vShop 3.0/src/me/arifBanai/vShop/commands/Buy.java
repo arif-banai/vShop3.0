@@ -118,8 +118,6 @@ public class Buy implements CommandExecutor {
 			int bought = 0;
 			// Used to keep track of how much the buyer has spent in total
 			double spent = 0;
-
-			//TODO player wanted 10 items, ends up buying all items
 			
 			for (Offer o : offers) {
 				if (o.price <= maxPrice) {

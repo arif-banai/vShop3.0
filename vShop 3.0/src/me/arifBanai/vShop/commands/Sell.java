@@ -45,13 +45,6 @@ public class Sell implements CommandExecutor {
 				ChatUtils.noPermission(player);
 				return false;
 			}
-
-			sender.sendMessage(label);
-			sender.sendMessage(args.length + "");
-			
-			for(String x : args) {
-				sender.sendMessage(x);
-			}
 			
 			// Check if the command is NOT formatted properly
 			if (args.length < 3) {

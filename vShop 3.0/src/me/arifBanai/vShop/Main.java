@@ -23,9 +23,6 @@ import me.arifBanai.vShop.managers.database.SQLiteManager;
 
 public class Main extends JavaPlugin {
 
-	//TODO Bug list:
-	//TODO Offers not being removed from database when amount = 1
-
 	public static Economy economy = null;
 
 	private ConfigManager configMan;
@@ -72,7 +69,7 @@ public class Main extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		// TODO not sure anything needs to go here
+		//Nothing really needs to be here
 	}
 
 	public DatabaseManager getSQL() {

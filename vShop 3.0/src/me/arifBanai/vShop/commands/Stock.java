@@ -46,20 +46,14 @@ public class Stock implements CommandExecutor {
 
 			// Check if the command is formatted properly
 			if (args.length > 0 && !(args.length > 2)) {
-				/*
-				 * Get the UUID of the seller in question from the seller's in-game name. This
-				 * is deprecated because player's can change their in-game name. This can be
-				 * fixed by simply logging the player's UUID and name upon joining and checking
-				 * if the player has changed their name everytime they join the server
-				 */
-				// TODO Create a UUID-Name logging system
-				//String sellerUUID = plugin.getServer().getOfflinePlayer(args[0]).getUniqueId().toString();
+				
 				String sellerUUID = null;
 				try {
 					sellerUUID = plugin.getIDLogger().getUUIDByName(args[0]);
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
+					plugin.disablePlugin();
 				}
 				
 				if(sellerUUID == null) {

@@ -9,19 +9,19 @@ database: true
 api-version: 1.13
 commands:
   buy:
-    description: /buy <amount> <itemName> <maxPricePerItem>
+    description: <amount> <itemName> <maxPricePerItem>
     permission: vshop.commands.buy
   sell:
-    description: /sell <amount> <itemName> <pricePerItem>
+    description: <amount> <itemName> <pricePerItem>
     permission: vshop.commands.sell
   recall:
-    description: /recall <itemName>
+    description: <itemName>
     permission: vshop.commands.recall
   find:
-    description: /find <itemName> [pageNumber]
+    description: <itemName> [pageNumber]
     permission: vshop.commands.find
   stock:
-    description: /find <playerName> [pageNumber]
+    description: <playerName> [pageNumber]
     permission: vshop.commands.stock
   test:
     description: Test command for debugging, should not be used

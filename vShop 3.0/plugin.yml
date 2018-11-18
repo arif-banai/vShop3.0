@@ -9,22 +9,22 @@ database: true
 api-version: 1.13
 commands:
   buy:
-    description: Buy an item from the shop
+    description: /buy <amount> <itemName> <maxPricePerItem>
     permission: vshop.commands.buy
   sell:
-    description: Put an item up for sale
+    description: /sell <amount> <itemName> <pricePerItem>
     permission: vshop.commands.sell
   recall:
-    description: Recall an item from the shop
+    description: /recall <itemName>
     permission: vshop.commands.recall
   find:
-    description: Find players selling this item
+    description: /find <itemName> [pageNumber]
     permission: vshop.commands.find
   stock:
-    description: Browse through a player's wares
+    description: /find <playerName> [pageNumber]
     permission: vshop.commands.stock
   test:
-    description: Test command for debugging
+    description: Test command for debugging, should not be used
     permission: vshop.commands.test
 permissions:
   vshop.commands.*:

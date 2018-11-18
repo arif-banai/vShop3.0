@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.managers.database;
+package me.arifBanai.vShop.managers.database;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -6,10 +6,10 @@ import java.util.List;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.smeefgaming.vShop.objects.Offer;
-import com.smeefgaming.vShop.objects.Transaction;
+import com.huskehhh.bukkitSQL.Database;
 
-import me.arifBanai.database.Database;
+import me.arifBanai.vShop.objects.Offer;
+import me.arifBanai.vShop.objects.Transaction;
 
 
 

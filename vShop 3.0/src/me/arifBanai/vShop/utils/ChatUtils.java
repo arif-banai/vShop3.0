@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.utils;
+package me.arifBanai.vShop.utils;
 
 import static org.bukkit.ChatColor.AQUA;
 import static org.bukkit.ChatColor.BLUE;

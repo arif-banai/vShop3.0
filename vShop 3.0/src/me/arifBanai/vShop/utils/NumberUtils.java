@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.utils;
+package me.arifBanai.vShop.utils;
 
 public class NumberUtils {
 	public static int getInteger(String s) {

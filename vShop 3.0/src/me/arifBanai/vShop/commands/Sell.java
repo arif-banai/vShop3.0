@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.commands;
+package me.arifBanai.vShop.commands;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -10,11 +10,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 
-import com.smeefgaming.vShop.Main;
-import com.smeefgaming.vShop.objects.Offer;
-import com.smeefgaming.vShop.utils.ChatUtils;
-import com.smeefgaming.vShop.utils.InventoryUtils;
-import com.smeefgaming.vShop.utils.NumberUtils;
+import me.arifBanai.vShop.Main;
+import me.arifBanai.vShop.objects.Offer;
+import me.arifBanai.vShop.utils.ChatUtils;
+import me.arifBanai.vShop.utils.InventoryUtils;
+import me.arifBanai.vShop.utils.NumberUtils;
 
 public class Sell implements CommandExecutor {
 

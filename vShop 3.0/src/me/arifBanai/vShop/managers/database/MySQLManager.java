@@ -1,14 +1,13 @@
-package com.smeefgaming.vShop.managers.database;
+package me.arifBanai.vShop.managers.database;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 
+import com.huskehhh.bukkitSQL.mysql.MySQL;
 
-import com.smeefgaming.vShop.Main;
-import com.smeefgaming.vShop.managers.ConfigManager;
-
-import me.arifBanai.database.mysql.MySQL;
+import me.arifBanai.vShop.Main;
+import me.arifBanai.vShop.managers.ConfigManager;
 
 public class MySQLManager extends DatabaseManager {
 

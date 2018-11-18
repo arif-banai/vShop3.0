@@ -1,10 +1,10 @@
-package com.smeefgaming.vShop.commands;
+package me.arifBanai.vShop.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import com.smeefgaming.vShop.Main;
+import me.arifBanai.vShop.Main;
 
 public class Sales implements CommandExecutor {
 

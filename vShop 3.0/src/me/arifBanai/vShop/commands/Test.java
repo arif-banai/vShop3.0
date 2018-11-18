@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.commands;
+package me.arifBanai.vShop.commands;
 
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -6,7 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.smeefgaming.vShop.Main;
+import me.arifBanai.vShop.Main;
 
 public class Test implements CommandExecutor {
 	

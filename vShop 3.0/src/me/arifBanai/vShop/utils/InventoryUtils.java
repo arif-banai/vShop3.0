@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.utils;
+package me.arifBanai.vShop.utils;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;

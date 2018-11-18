@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.objects;
+package me.arifBanai.vShop.objects;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

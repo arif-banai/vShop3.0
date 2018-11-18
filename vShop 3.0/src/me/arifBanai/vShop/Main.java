@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop;
+package me.arifBanai.vShop;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -9,18 +9,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.smeefgaming.vShop.commands.Buy;
-import com.smeefgaming.vShop.commands.Find;
-import com.smeefgaming.vShop.commands.Recall;
-import com.smeefgaming.vShop.commands.Sell;
-import com.smeefgaming.vShop.commands.Stock;
-import com.smeefgaming.vShop.commands.Test;
-import com.smeefgaming.vShop.managers.ConfigManager;
-import com.smeefgaming.vShop.managers.database.DatabaseManager;
-import com.smeefgaming.vShop.managers.database.MySQLManager;
-import com.smeefgaming.vShop.managers.database.SQLiteManager;
-
 import me.arifBanai.idLogger.IDLogger;
+import me.arifBanai.vShop.commands.Buy;
+import me.arifBanai.vShop.commands.Find;
+import me.arifBanai.vShop.commands.Recall;
+import me.arifBanai.vShop.commands.Sell;
+import me.arifBanai.vShop.commands.Stock;
+import me.arifBanai.vShop.commands.Test;
+import me.arifBanai.vShop.managers.ConfigManager;
+import me.arifBanai.vShop.managers.database.DatabaseManager;
+import me.arifBanai.vShop.managers.database.MySQLManager;
+import me.arifBanai.vShop.managers.database.SQLiteManager;
 
 public class Main extends JavaPlugin {
 

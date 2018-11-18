@@ -1,4 +1,4 @@
-package com.smeefgaming.vShop.managers;
+package me.arifBanai.vShop.managers;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

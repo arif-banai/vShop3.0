@@ -1,11 +1,11 @@
-package com.smeefgaming.vShop.managers.database;
+package me.arifBanai.vShop.managers.database;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.smeefgaming.vShop.Main;
+import com.huskehhh.bukkitSQL.sqlite.SQLite;
 
-import me.arifBanai.database.sqlite.SQLite;
+import me.arifBanai.vShop.Main;
 
 public class SQLiteManager extends DatabaseManager {
 	

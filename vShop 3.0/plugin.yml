@@ -1,7 +1,7 @@
 name: vShop
-main: com.smeefgaming.vShop.Main
-author: smeef240
-website: http://smeefgaming.com/
+main: me.arifBanai.vShop.Main
+author: smeef
+website: https://github.com/arif-banai
 version: 3.0
 description: A virtual shop, great for economy servers
 depend: [Vault,IDLogger]

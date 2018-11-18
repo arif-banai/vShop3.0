@@ -1,13 +1,11 @@
 # vShop3.0
-Check out the plugin on Spigot: https://www.spigotmc.org/resources/vshop-remastered.62508/
+## Check out the plugin on Spigot: [vShop Remastered](https://www.spigotmc.org/resources/vshop-remastered.62508/)
 
 vShop updated for Spigot api-version 1.13
 
-Dependencies: 
-  
-  IDLogger https://github.com/arif-banai/IDLogger
-  
-  Vault    https://www.spigotmc.org/resources/vault.34315/
+**Dependencies:**
+  - [IDLogger](https://github.com/arif-banai/IDLogger)
+  - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 
 This plugin allows players to buy and sell from each other using only commands to make buying and selling on your economy server quick and efficient!
 

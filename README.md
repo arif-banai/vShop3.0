@@ -4,6 +4,7 @@ Check out the plugin on Spigot: https://www.spigotmc.org/resources/vshop-remaste
 vShop updated for Spigot api-version 1.13
 
 Dependencies: 
+  
   IDLogger https://github.com/arif-banai/IDLogger
   
   Vault    https://www.spigotmc.org/resources/vault.34315/

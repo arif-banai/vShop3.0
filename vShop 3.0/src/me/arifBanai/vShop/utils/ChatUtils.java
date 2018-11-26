@@ -48,9 +48,8 @@ public class ChatUtils {
 				+ formatItem(Material.getMaterial(textID)) + " for " + formatPrice(price) + " each.";
 	}
 	
-	public static String formatTransaction(String sellerName, String buyerName, String textID, int amount, double price) {
-		return formatSeller(sellerName) + " sold " + formatAmount(amount) + " " 
-				+ formatItem(Material.getMaterial(textID)) + " to " + formatBuyer(buyerName) + " for " + formatPrice(price);
+	public static String formatYourTransaction(String buyerName, String textID, int amount, double price) {
+		return formatSeller("You") + " sold " + formatAmount(amount) + " " + formatItem(Material.getMaterial(textID)) + " to\t" + formatBuyer(buyerName) + " for\t" + formatPrice(price);
 	}
 
 	public static void sendSuccess(CommandSender sender, String msg) {

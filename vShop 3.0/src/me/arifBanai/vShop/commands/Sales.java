@@ -92,7 +92,7 @@ public class Sales implements CommandExecutor {
 
 				// Format the transaction and send to player
 				try {
-					player.sendMessage(ChatUtils.formatTransaction(plugin.getIDLogger().getNameByUUID(t.sellerUUID), 
+					player.sendMessage(ChatUtils.formatYourTransaction( 
 																	plugin.getIDLogger().getNameByUUID(t.buyerUUID), 
 																	t.textID,
 																	t.amount,

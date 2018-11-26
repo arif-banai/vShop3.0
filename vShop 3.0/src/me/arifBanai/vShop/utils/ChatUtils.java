@@ -50,7 +50,7 @@ public class ChatUtils {
 	
 	public static String formatTransaction(String sellerName, String buyerName, String textID, int amount, double price) {
 		return formatSeller(sellerName) + " sold " + formatAmount(amount) + " " 
-				+ formatItem(Material.getMaterial(textID)) + " for " + formatPrice(price);
+				+ formatItem(Material.getMaterial(textID)) + " to " + formatBuyer(buyerName) + " for " + formatPrice(price);
 	}
 
 	public static void sendSuccess(CommandSender sender, String msg) {

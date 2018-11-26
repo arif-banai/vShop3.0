@@ -44,6 +44,7 @@ public class Transaction {
 			System.out.println("An SQLException occured while listing transactions.");
 			return null;
 		}
+		
 		return transactionList;
 	}
 }

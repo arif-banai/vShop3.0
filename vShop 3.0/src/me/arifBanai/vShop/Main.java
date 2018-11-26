@@ -3,8 +3,6 @@ package me.arifBanai.vShop;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,13 +11,14 @@ import me.arifBanai.idLogger.IDLogger;
 import me.arifBanai.vShop.commands.Buy;
 import me.arifBanai.vShop.commands.Find;
 import me.arifBanai.vShop.commands.Recall;
+import me.arifBanai.vShop.commands.Sales;
 import me.arifBanai.vShop.commands.Sell;
 import me.arifBanai.vShop.commands.Stock;
-import me.arifBanai.vShop.commands.Test;
 import me.arifBanai.vShop.managers.ConfigManager;
 import me.arifBanai.vShop.managers.database.DatabaseManager;
 import me.arifBanai.vShop.managers.database.MySQLManager;
 import me.arifBanai.vShop.managers.database.SQLiteManager;
+import net.milkbowl.vault.economy.Economy;
 
 public class Main extends JavaPlugin {
 
@@ -106,10 +105,9 @@ public class Main extends JavaPlugin {
 		getCommand("find").setExecutor(new Find(this));
 		getCommand("stock").setExecutor(new Stock(this));
 		getCommand("recall").setExecutor(new Recall(this));
-		// TODO add sales command once implemented
+		getCommand("sales").setExecutor(new Sales(this));
 		
-		//Test command to help with debugging
-		getCommand("test").setExecutor(new Test(this));
+		//TODO more commands related to Transactions
 	}
 
 }

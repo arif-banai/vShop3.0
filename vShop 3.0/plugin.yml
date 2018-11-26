@@ -9,23 +9,23 @@ database: true
 api-version: 1.13
 commands:
   buy:
-    description: <amount> <itemName> <maxPricePerItem>
+    description: "Buy items: <amount> <itemName> <maxPricePerItem>"
     permission: vshop.commands.buy
   sell:
-    description: <amount> <itemName> <pricePerItem>
+    description: "Sell items: <amount> <itemName> <pricePerItem>"
     permission: vshop.commands.sell
   recall:
-    description: <itemName>
+    description: "Recall an offer for some item: <itemName>"
     permission: vshop.commands.recall
   find:
-    description: <itemName> [pageNumber]
+    description: "Find offers for some item: <itemName> [pageNumber]"
     permission: vshop.commands.find
   stock:
-    description: <playerName> [pageNumber]
+    description: "Find offers by some player: <playerName> [pageNumber]"
     permission: vshop.commands.stock
-  test:
-    description: Test command for debugging, should not be used
-    permission: vshop.commands.test
+  sales:
+    description: "Get your sales history: [pageNumber]"
+    permission: vshop.commands.sales
 permissions:
   vshop.commands.*:
     description: Access to all vShop commands
@@ -35,6 +35,7 @@ permissions:
       vshop.commands.recall: true
       vshop.commands.find: true
       vshop.commands.stock: true
+      vshop.commands.sales: true
   vshop.commands.buy: 
     description: Permission to use /buy
     default: op
@@ -50,6 +51,6 @@ permissions:
   vshop.commands.stock: 
     description: Permission to use /buy
     default: op
-  vshop.commands.test: 
-    description: Permission to use /test
+  vshop.commands.sales: 
+    description: Permission to use /sales
     default: op

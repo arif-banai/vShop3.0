@@ -49,7 +49,7 @@ public class ChatUtils {
 	}
 	
 	public static String formatYourTransaction(String buyerName, String textID, int amount, double price) {
-		return formatSeller("You") + " sold " + formatAmount(amount) + " " + formatItem(Material.getMaterial(textID)) + " to" + "\t" + formatBuyer(buyerName) + " for" + "\t" + formatPrice(price);
+		return formatSeller("You") + " sold " + formatAmount(amount) + " " + formatItem(Material.getMaterial(textID)) + " to" + "\n" + formatBuyer(buyerName) + " for" + "\n" + formatPrice(price);
 	}
 
 	public static void sendSuccess(CommandSender sender, String msg) {

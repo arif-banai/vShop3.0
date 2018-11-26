@@ -18,7 +18,7 @@ import me.arifBanai.vShop.utils.NumberUtils;
 
 public class Sell implements CommandExecutor {
 
-	protected Main plugin;
+	private Main plugin;
 
 	public Sell(final Main instance) {
 		plugin = instance;

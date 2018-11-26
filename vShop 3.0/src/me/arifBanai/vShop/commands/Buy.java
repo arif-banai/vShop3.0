@@ -23,7 +23,7 @@ import me.arifBanai.vShop.utils.NumberUtils;
 
 public class Buy implements CommandExecutor {
 
-	protected Main plugin;
+	private Main plugin;
 
 	public Buy(final Main instance) {
 		plugin = instance;

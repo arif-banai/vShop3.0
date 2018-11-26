@@ -17,7 +17,7 @@ import me.arifBanai.vShop.utils.NumberUtils;
 
 public class Stock implements CommandExecutor {
 
-	protected Main plugin;
+	private Main plugin;
 
 	public Stock(final Main instance) {
 		plugin = instance;

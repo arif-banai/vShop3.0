@@ -19,7 +19,7 @@ import me.arifBanai.vShop.utils.ChatUtils;
 
 public class Recall implements CommandExecutor {
 
-	protected Main plugin;
+	private Main plugin;
 
 	public Recall(final Main instance) {
 		plugin = instance;

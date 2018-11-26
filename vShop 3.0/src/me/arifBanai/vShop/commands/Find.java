@@ -19,7 +19,7 @@ import me.arifBanai.vShop.utils.NumberUtils;
 
 public class Find implements CommandExecutor {
 
-	protected Main plugin;
+	private Main plugin;
 
 	public Find(final Main instance) {
 		plugin = instance;

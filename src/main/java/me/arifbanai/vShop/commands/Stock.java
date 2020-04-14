@@ -1,6 +1,5 @@
 package me.arifbanai.vShop.commands;
 
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
@@ -16,7 +15,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Stock implements CommandExecutor {
@@ -122,7 +120,6 @@ public class Stock implements CommandExecutor {
 						plugin.disablePlugin();
 					}
 				});
-				
 
 				// Command completed successfully
 				return true;

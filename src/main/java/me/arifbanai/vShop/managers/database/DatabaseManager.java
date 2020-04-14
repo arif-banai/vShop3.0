@@ -61,7 +61,22 @@ public abstract class DatabaseManager {
 		safeStatement.setString(3, textID);
 
 		safeStatement.executeUpdate();
-	}	
+	}
+
+	public void updateQuantityAndPrice(String sellerUUID, String textID, int newQuantity, double newPrice)
+			throws SQLException, ClassNotFoundException {
+
+		PreparedStatement safeStatement;
+		safeStatement = db.getConnection()
+				.prepareStatement("UPDATE stock SET " + "amount = ?, price = ? WHERE " + "sellerUUID = ? AND textID = ?");
+
+		safeStatement.setInt(1, newQuantity);
+		safeStatement.setDouble(2, newPrice);
+		safeStatement.setString(3, sellerUUID);
+		safeStatement.setString(4, textID);
+
+		safeStatement.executeUpdate();
+	}
 
 	public List<Offer> getItemOffers(String textID) throws SQLException, ClassNotFoundException {
 

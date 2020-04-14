@@ -138,11 +138,9 @@ public class Stock implements CommandExecutor {
 			public void run() {
 				try {
 					final String result = plugin.getIDLogger().getUUIDByName(playerName);
-
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
 						public void run() {
-
 							if(result == null) {
 								callback.onFailure(new PlayerNotFoundException());
 								return;

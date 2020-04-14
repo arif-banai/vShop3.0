@@ -1,5 +1,6 @@
 package me.arifbanai.vShop.utils;
 
+import me.arifbanai.vShop.objects.Offer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -70,7 +71,10 @@ public class ChatUtils {
 	}
 
 	public static void broadcastOffer(String name, int amount, String textID, double price) {
-			sendGlobal(formatOffer(name, amount, textID, price));
+		sendGlobal(formatOffer(name, amount, textID, price));
 	}
 
+	public static void broadcastOffer(String name, Offer o) {
+		broadcastOffer(name, o.amount, o.textID, o.price);
+	}
 }

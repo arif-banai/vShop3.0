@@ -1,12 +1,12 @@
 name: vShop
-main: main.java.arifbanai.vShop.Main
+main: me.arifbanai.vShop.Main
 author: smeef
 website: https://github.com/arif-banai
 version: 3.0
 description: A virtual shop, great for economy servers
 depend: [Vault,IDLogger]
 database: true
-api-version: 1.13
+api-version: 1.15
 commands:
   buy:
     description: "Buy items: <amount> <itemName> <maxPricePerItem>"

@@ -1,6 +1,6 @@
 package me.arifbanai.vShop;
 
-import main.java.arifbanai.idLogger.IDLogger;
+import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.vShop.commands.*;
 import me.arifbanai.vShop.managers.ConfigManager;
 import me.arifbanai.vShop.managers.database.DatabaseManager;

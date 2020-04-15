@@ -252,8 +252,6 @@ public abstract class DatabaseManager {
 		});
 	}
 
-
-
 	public void doAsyncGetOffersBySeller(final String playerUUID, final Callback<List<Offer>> callback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
@@ -306,6 +304,28 @@ public abstract class DatabaseManager {
 		});
 	}
 
+	public void doAsyncUpdateOfferQuantity(final String playerUUID, final String itemName,
+								   final int newQuantity, final Callback<Void> callback) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					updateQuantity(playerUUID, itemName, newQuantity);
+
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+							callback.onSuccess(null);
+						}
+					});
+
+				} catch (SQLException | ClassNotFoundException throwables) {
+					callback.onFailure(throwables);
+				}
+			}
+		});
+	}
+
 	public void doAsyncUpdateOffer(final String playerUUID, final String itemName,
 									final int newQuantity, final double newPrice, final Callback<Void> callback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
@@ -334,6 +354,26 @@ public abstract class DatabaseManager {
 			public void run() {
 				try {
 					deleteOffer(playerUUID, itemID);
+
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+							callback.onSuccess(null);
+						}
+					});
+				} catch (SQLException | ClassNotFoundException throwables) {
+					callback.onFailure(throwables);
+				}
+			}
+		});
+	}
+
+	public void doAsyncLogTransaction(final Transaction t, final Callback<Void> callback) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					logTransaction(t);
 
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override

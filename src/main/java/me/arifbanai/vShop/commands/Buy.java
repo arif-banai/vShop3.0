@@ -1,6 +1,5 @@
 package me.arifbanai.vShop.commands;
 
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.interfaces.Callback;
@@ -17,8 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;

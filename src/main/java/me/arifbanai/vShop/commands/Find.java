@@ -121,17 +121,6 @@ public class Find implements CommandExecutor {
 							+ pageNumber + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"
 							+ ChatColor.DARK_GRAY + "---------------");
 
-					int diffOffersStart = offersByItem.size() - start;
-
-					int numOfferStrings;
-					if(diffOffersStart < 9) {
-						numOfferStrings = diffOffersStart;
-					} else {
-						numOfferStrings = 9;
-					}
-
-					ArrayList<String> offerStrings = new ArrayList<>(numOfferStrings);
-
 					// Start listing the offers
 					for (int count = start; count < offersByItem.size() && count < start + 9; count++) {
 						Offer o = offersByItem.get(count);
@@ -142,7 +131,7 @@ public class Find implements CommandExecutor {
 								String sellerName = result;
 
 								String offerMessage = ChatUtils.formatOffer(sellerName, o.amount, o.textID, o.price);
-								offerStrings.add(offerMessage);
+								player.sendMessage(offerMessage);
 							}
 
 							@Override
@@ -159,8 +148,6 @@ public class Find implements CommandExecutor {
 							}
 						});
 					}
-
-					player.sendMessage((String[]) offerStrings.toArray());
 				}
 
 				@Override

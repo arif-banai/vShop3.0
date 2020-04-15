@@ -1,6 +1,7 @@
 package me.arifbanai.vShop.commands;
 
 import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.objects.Transaction;
 import me.arifbanai.vShop.utils.ChatUtils;
@@ -23,9 +24,11 @@ import java.util.UUID;
 public class Buy implements CommandExecutor {
 
 	private Main plugin;
+	private DatabaseManager db;
 
 	public Buy(final Main instance) {
 		plugin = instance;
+		db = plugin.getSQL();
 	}
 
 	@Override
@@ -246,6 +249,4 @@ public class Buy implements CommandExecutor {
 
 		return false;
 	}
-	
-
 }

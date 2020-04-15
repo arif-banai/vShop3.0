@@ -1,5 +1,6 @@
 package me.arifbanai.vShop.managers.database;
 
+import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.managers.ConfigManager;
 import me.huskehhh.bukkitSQL.mysql.MySQL;
@@ -10,8 +11,8 @@ import java.util.logging.Level;
 
 public class MySQLManager extends DatabaseManager {
 
-	public MySQLManager(final Main plugin) {
-		super(plugin);
+	public MySQLManager(final Main plugin, final IDLogger instance) {
+		super(plugin, instance);
 	}
 
 	@Override

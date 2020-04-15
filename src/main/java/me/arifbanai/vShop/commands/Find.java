@@ -1,9 +1,15 @@
 package me.arifbanai.vShop.commands;
 
+import jdk.nashorn.internal.codegen.CompilerConstants;
 import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.exceptions.OffersNotFoundException;
+import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
+import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -14,14 +20,17 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class Find implements CommandExecutor {
 
 	private Main plugin;
+	private DatabaseManager db;
 
 	public Find(final Main instance) {
 		plugin = instance;
+		db = plugin.getSQL();
 	}
 
 	@Override
@@ -81,63 +90,91 @@ public class Find implements CommandExecutor {
 			// OR if args.length >= 2, the pageNumber may be in the last argument
 			// 		Use <noPageArgument> to check if the last argument is the pageNumber
 			// If [page] is used, validate the input
-			int page = 1;
+			final int page;
 			if (!noPageArgument) {
 				page = NumberUtils.getInteger(args[args.length-1]);
 				if (page <= 0) {
 					ChatUtils.sendError(player, "The page number cannot equal to or less than 0.");
 					return false;
 				}
-			}
-			
-			// Prepare the list of offers
-			List<Offer> offers = new ArrayList<Offer>();
-			try {
-				// Find offers for this item in the database,
-				// returns empty ArrayList if none found
-				offers = plugin.getSQL().getItemOffers(item.toString());
-			} catch (SQLException | ClassNotFoundException e) {
-				e.printStackTrace();
-				ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-				plugin.disablePlugin();
-			}
-
-			// Check if ArrayList of offers is empty
-			if (offers == null || offers.size() == 0) {
-				ChatUtils.sendError(player, "There is no " + ChatUtils.formatItem(item) + " for sale.");
-				return false;
-			}
-
-			// Prepare the page format for the chat window in-game
-			int start = (page - 1) * 9;
-			int pages = offers.size() / 9 + 1;
-			if (page > pages) {
-				start = 0;
+			} else {
 				page = 1;
 			}
 
-			// Top border of the page
-			player.sendMessage(ChatColor.DARK_GRAY + "---------------" + ChatColor.GRAY + "Page (" + ChatColor.RED
-					+ page + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"
-					+ ChatColor.DARK_GRAY + "---------------");
+			db.doAsyncGetItemOffers(item.toString(), new Callback<List<Offer>>() {
+				@Override
+				public void onSuccess(List<Offer> result) {
+					List<Offer> offersByItem = result;
 
-			// Start listing the offers
-			
-			for (int count = start; count < offers.size() && count < start + 9; count++) {
-				
-				Offer o = offers.get(count);
-				
-				// Format the offer and send to player
-				try {
-					sender.sendMessage(ChatUtils.formatOffer(plugin.getIDLogger().getNameByUUID(o.sellerUUID), o.amount, o.textID, o.price));
-				} catch (Exception e) {
-					e.printStackTrace();
-					ChatUtils.sendError(player,
-							"An SQLException occured. Please alert admins. vShop shutting down.");
+					int pageNumber = page;
+
+					// Prepare the page format for the chat window in-game
+					int start = (pageNumber - 1) * 9;
+					int pages = offersByItem.size() / 9 + 1;
+					if (pageNumber > pages) {
+						start = 0;
+						pageNumber = 1;
+					}
+
+					// Top border of the page
+					player.sendMessage(ChatColor.DARK_GRAY + "---------------" + ChatColor.GRAY + "Page (" + ChatColor.RED
+							+ pageNumber + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"
+							+ ChatColor.DARK_GRAY + "---------------");
+
+					int diffOffersStart = offersByItem.size() - start;
+
+					int numOfferStrings;
+					if(diffOffersStart < 9) {
+						numOfferStrings = diffOffersStart;
+					} else {
+						numOfferStrings = 9;
+					}
+
+					ArrayList<String> offerStrings = new ArrayList<>(numOfferStrings);
+
+					// Start listing the offers
+					for (int count = start; count < offersByItem.size() && count < start + 9; count++) {
+						Offer o = offersByItem.get(count);
+
+						db.doAsyncNameLookup(o.sellerUUID, new Callback<String>() {
+							@Override
+							public void onSuccess(String result) {
+								String sellerName = result;
+
+								String offerMessage = ChatUtils.formatOffer(sellerName, o.amount, o.textID, o.price);
+								offerStrings.add(offerMessage);
+							}
+
+							@Override
+							public void onFailure(Throwable cause) {
+
+								if(cause instanceof PlayerNotFoundException) {
+									ChatUtils.sendError(player, "IDLogger couldn't get the players name. Please alert admins");
+								}
+
+								cause.printStackTrace();
+								ChatUtils.sendError(player,
+										"An SQLException occured. Please alert admins. vShop shutting down.");
+								plugin.disablePlugin();
+							}
+						});
+					}
+
+					player.sendMessage((String[]) offerStrings.toArray());
+				}
+
+				@Override
+				public void onFailure(Throwable cause) {
+					if(cause instanceof OffersNotFoundException) {
+						ChatUtils.sendError(player, "There is no " + ChatUtils.formatItem(item) + " for sale.");
+						return;
+					}
+
+					cause.printStackTrace();
+					ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
 					plugin.disablePlugin();
 				}
-				
-			}
+			});
 
 			// Command has completed successfully
 			return true;

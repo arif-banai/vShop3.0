@@ -32,29 +32,29 @@ public class Main extends JavaPlugin {
 		idLogger = (IDLogger) Bukkit.getPluginManager().getPlugin("IDLogger");
 
 		if (!setupEconomy()) {
-			this.getLogger().info("Problem depending Vault. Disabling...");
-			this.getServer().getPluginManager().disablePlugin(this);
+			getLogger().info("Problem depending Vault. Disabling...");
+			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
 
 		if (configMan.usingMySQL()) {
-			db = new MySQLManager(this);
+			db = new MySQLManager(this, idLogger);
 			try {
 				db.setupDb();
 			} catch (ClassNotFoundException | SQLException e) {
-				this.getLogger().log(Level.SEVERE, "Unable to connect to MySQL. Displaying stack-trace.");
+				getLogger().log(Level.SEVERE, "Unable to connect to MySQL. Displaying stack-trace.");
 				e.printStackTrace();
-				this.getServer().getPluginManager().disablePlugin(this);
+				getServer().getPluginManager().disablePlugin(this);
 			}
 		} else {
-			db = new SQLiteManager(this);
+			db = new SQLiteManager(this, idLogger);
 
 			try {
 				db.setupDb();
 			} catch (ClassNotFoundException | SQLException e) {
-				this.getLogger().log(Level.SEVERE, "Unable to use SQLite. Displaying stack-trace.");
+				getLogger().log(Level.SEVERE, "Unable to use SQLite. Displaying stack-trace.");
 				e.printStackTrace();
-				this.getServer().getPluginManager().disablePlugin(this);
+				getServer().getPluginManager().disablePlugin(this);
 			}
 		}
 
@@ -80,8 +80,8 @@ public class Main extends JavaPlugin {
 
 	// disables plugin
 	public void disablePlugin() {
-		this.getLogger().log(Level.SEVERE, "Unable to connect to MySQL. Shutting down plugin...");
-		this.getServer().getPluginManager().disablePlugin(this);
+		getLogger().log(Level.SEVERE, "Unable to connect to MySQL. Shutting down plugin...");
+		getServer().getPluginManager().disablePlugin(this);
 	}
 
 	private boolean setupEconomy() {

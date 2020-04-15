@@ -21,7 +21,7 @@ public class Sales implements CommandExecutor {
 	public Sales(final Main instance) {
 		plugin = instance;
 	}
-	
+
 	// /sales [pageNumber]
 	
 	@Override

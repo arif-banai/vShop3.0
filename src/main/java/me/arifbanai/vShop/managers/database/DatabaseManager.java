@@ -1,8 +1,14 @@
 package me.arifbanai.vShop.managers.database;
 
+import me.arifbanai.idLogger.IDLogger;
+import me.arifbanai.vShop.exceptions.OffersNotFoundException;
+import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
+import me.arifbanai.vShop.interfaces.Callback;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.objects.Transaction;
+import me.arifbanai.vShop.utils.ChatUtils;
 import me.huskehhh.bukkitSQL.Database;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.PreparedStatement;
@@ -13,10 +19,11 @@ public abstract class DatabaseManager {
 
 	protected Database db;
 	protected JavaPlugin plugin;
+	protected IDLogger idLogger;
 
-	public DatabaseManager(final JavaPlugin instance) {
-		plugin = instance;
-
+	public DatabaseManager(final JavaPlugin plugin, final IDLogger instance) {
+		this.plugin = plugin;
+		idLogger = instance;
 	}
 
 	public abstract void setupDb() throws ClassNotFoundException, SQLException;
@@ -198,4 +205,104 @@ public abstract class DatabaseManager {
 		return Transaction.listTransactions(safeStatement.executeQuery());
 	}
 
+	public void doAsyncGetItemOffers(final String itemName, final Callback<List<Offer>> callback) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final List<Offer> offersByItem = getItemOffers(itemName);
+
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+
+							if (offersByItem == null || offersByItem.size() == 0) {
+								callback.onFailure(new OffersNotFoundException());
+								return;
+							}
+
+							callback.onSuccess(offersByItem);
+						}
+					});
+
+				} catch (SQLException | ClassNotFoundException throwables) {
+					callback.onFailure(throwables);
+				}
+			}
+		});
+	}
+
+	public void doAsyncUUIDLookup(final String playerName, final Callback<String> callback) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final String playerUUID = idLogger.getUUIDByName(playerName);
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+							if(playerUUID == null) {
+								callback.onFailure(new PlayerNotFoundException());
+								return;
+							}
+
+							callback.onSuccess(playerUUID);
+						}
+					});
+				} catch (SQLException throwables) {
+					callback.onFailure(throwables);
+				}
+			}
+		});
+	}
+
+	public void doAsyncNameLookup(final String playerUUID, final Callback<String> callback) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final String playerName = idLogger.getNameByUUID(playerUUID);
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+							if(playerName == null) {
+								callback.onFailure(new PlayerNotFoundException());
+								return;
+							}
+
+							callback.onSuccess(playerName);
+						}
+					});
+				} catch (SQLException throwables) {
+					callback.onFailure(throwables);
+				}
+			}
+		});
+	}
+
+	public void doAsyncGetOffersBySeller(final String playerUUID, final Callback<List<Offer>> callback) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final List<Offer> offersBySellerUUID = searchBySeller(playerUUID);
+
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() {
+
+							if(offersBySellerUUID.size() == 0) {
+								callback.onFailure(new OffersNotFoundException());
+								return;
+							}
+
+							callback.onSuccess(offersBySellerUUID);
+						}
+					});
+				} catch (SQLException | ClassNotFoundException throwables) {
+					callback.onFailure(throwables);
+				}
+			}
+		});
+	}
 }

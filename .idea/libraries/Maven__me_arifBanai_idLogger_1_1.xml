@@ -8,6 +8,7 @@
     </JAVADOC>
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/me/arifBanai/idLogger/1.1/idLogger-1.1-sources.jar!/" />
+      <root url="file://$PROJECT_DIR$/../IDLogger/src/main/java" />
     </SOURCES>
   </library>
 </component>

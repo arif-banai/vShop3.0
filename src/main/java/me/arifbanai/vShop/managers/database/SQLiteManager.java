@@ -1,5 +1,6 @@
 package me.arifbanai.vShop.managers.database;
 
+import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.vShop.Main;
 import me.huskehhh.bukkitSQL.sqlite.SQLite;
 
@@ -8,8 +9,8 @@ import java.sql.Statement;
 
 public class SQLiteManager extends DatabaseManager {
 	
-	public SQLiteManager(final Main instance) {
-		super(instance);
+	public SQLiteManager(final Main plugin, final IDLogger instance) {
+		super(plugin, instance);
 	}
 
 	@Override

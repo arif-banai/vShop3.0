@@ -23,7 +23,7 @@ public class Sales implements CommandExecutor {
 	}
 
 	// /sales [pageNumber]
-	
+	// TODO Bring this command back
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("sales")) {
@@ -76,7 +76,7 @@ public class Sales implements CommandExecutor {
 				start = 0;
 				page = 1;
 			}
-			
+
 			// Top border of the page
 			player.sendMessage(ChatColor.DARK_GRAY + "---------------" + ChatColor.GRAY + "Page (" + ChatColor.RED
 					+ page + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"

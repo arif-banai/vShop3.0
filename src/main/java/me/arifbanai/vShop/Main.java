@@ -100,7 +100,7 @@ public class Main extends JavaPlugin {
 		getCommand("find").setExecutor(new Find(this));
 		getCommand("stock").setExecutor(new Stock(this));
 		getCommand("recall").setExecutor(new Recall(this));
-		getCommand("sales").setExecutor(new Sales(this));
+		//TODO getCommand("sales").setExecutor(new Sales(this));
 		
 		//TODO more commands related to Transactions
 	}

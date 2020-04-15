@@ -101,9 +101,7 @@ public class Stock implements CommandExecutor {
 									return;
 								}
 
-								cause.printStackTrace();
-								ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-								plugin.disablePlugin();
+								handleSqlError(cause, player);
 							}
 						});
 					}
@@ -116,9 +114,7 @@ public class Stock implements CommandExecutor {
 							return;
 						}
 
-						cause.printStackTrace();
-						ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-						plugin.disablePlugin();
+						handleSqlError(cause, player);
 					}
 				});
 
@@ -131,5 +127,11 @@ public class Stock implements CommandExecutor {
 			}
 		}
 		return false;
+	}
+
+	private void handleSqlError(Throwable cause, Player player) {
+		cause.printStackTrace();
+		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
+		plugin.disablePlugin();
 	}
 }

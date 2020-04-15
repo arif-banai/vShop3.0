@@ -1,6 +1,9 @@
 package me.arifbanai.vShop.commands;
 
 import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.exceptions.OffersNotFoundException;
+import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import org.bukkit.Material;
@@ -19,9 +22,11 @@ import java.util.List;
 public class Recall implements CommandExecutor {
 
 	private Main plugin;
+	private DatabaseManager db;
 
 	public Recall(final Main instance) {
 		plugin = instance;
+		db = plugin.getSQL();
 	}
 
 	@Override
@@ -51,13 +56,13 @@ public class Recall implements CommandExecutor {
 				ChatUtils.sendError(player, "The proper usage is /recall <item>");
 				return false;
 			}
-			
+
 			String itemLookup;
-			
-			if(args.length > 1) {
+
+			if (args.length > 1) {
 				itemLookup = args[0];
-				
-				for(int i = 1; i < args.length; i++) {
+
+				for (int i = 1; i < args.length; i++) {
 					itemLookup += " " + args[i];
 				}
 			} else {
@@ -74,57 +79,56 @@ public class Recall implements CommandExecutor {
 				return false;
 			}
 
-			// Keep track of items to be removed from the database
-			int total = 0;
+			//Get offer from the database
+			db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new Callback<List<Offer>>() {
+				@Override
+				public void onSuccess(List<Offer> result) {
+					List<Offer> offers = result;
 
-			// Prepare list of offers
-			List<Offer> offers = new ArrayList<>();
+					// total = sum of amount for each offer
+					int total = 0;
+					for (Offer o : offers) {
+						total += o.amount;
+					}
 
-			try {
-				// Find offers made by player for certain item
-				offers = plugin.getSQL().getSellerOffers(player.getUniqueId().toString(), item.toString());
+					final int finalTotal = total;
 
-				// Check if the player doesn't have the item for sale
-				if (offers.size() == 0) {
-					ChatUtils.sendError(player, "You don't have any " + ChatUtils.formatItem(item) + " for sale");
-					return false;
+					//Attempt to remove the offers made by the player for the item
+					db.doAsyncDeleteOffer(player.getUniqueId().toString(), item.toString(), new Callback<Void>() {
+						@Override
+						public void onSuccess(Void result) {
+							// Create a new ItemStack for the item recalled, with the total amount of items removed
+							ItemStack itemstack = new ItemStack(item, finalTotal);
+
+							HashMap<Integer, ItemStack> leftOver = player.getInventory().addItem(itemstack);
+
+							for (ItemStack leftOverItem : leftOver.values()) {
+								player.getWorld().dropItem(player.getLocation(), leftOverItem);
+							}
+
+							// Tell the player what item was removed, and in what amount
+							ChatUtils.sendSuccess(sender,
+									"Removed " + ChatUtils.formatAmount(finalTotal)
+											+ " " + ChatUtils.formatItem(item));
+						}
+
+						@Override
+						public void onFailure(Throwable cause) {
+							handleSqlError(cause, player);
+						}
+					});
 				}
 
-				// For all offers found made by the player for a certain item, increment total
-				// by the amount of the offer
-				for (Offer o : offers) {
-					total += o.amount;
+				@Override
+				public void onFailure(Throwable cause) {
+					if (cause instanceof OffersNotFoundException) {
+						ChatUtils.sendError(player, "You don't have any " + ChatUtils.formatItem(item) + " for sale");
+						return;
+					}
+
+					handleSqlError(cause, player);
 				}
-			} catch (ClassNotFoundException | SQLException e1) {
-				e1.printStackTrace();
-				ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-				plugin.disablePlugin();
-			}
-
-			// The variable <total> must be greater than 0 at this point
-
-			// Attempt to remove the offers made by the player for the item
-			try {
-				plugin.getSQL().deleteOffer(player.getUniqueId().toString(), item.toString());
-			} catch (SQLException | ClassNotFoundException e) {
-				e.printStackTrace();
-				ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-				plugin.disablePlugin();
-			}
-
-			// Create a new ItemStack for the item recalled, with the total amount of items
-			// removed
-			ItemStack itemstack = new ItemStack(item, total);
-			
-			HashMap<Integer, ItemStack> leftOver = player.getInventory().addItem(itemstack);
-			
-			for(ItemStack leftOverItem : leftOver.values()) {
-				player.getWorld().dropItem(player.getLocation(), leftOverItem);
-			}
-
-			// Tell the player what item was removed, and in what amount
-			ChatUtils.sendSuccess(sender,
-					"Removed " + ChatUtils.formatAmount(total) + " " + ChatUtils.formatItem(item));
+			});
 
 			// Command completed successfully
 			return true;
@@ -132,4 +136,9 @@ public class Recall implements CommandExecutor {
 		return false;
 	}
 
+	private void handleSqlError(Throwable cause, Player player) {
+		cause.printStackTrace();
+		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
+		plugin.disablePlugin();
+	}
 }

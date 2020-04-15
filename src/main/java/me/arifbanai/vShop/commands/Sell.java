@@ -1,12 +1,13 @@
 package me.arifbanai.vShop.commands;
 
 import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import me.arifbanai.vShop.utils.InventoryUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,7 +15,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.sql.SQLException;
 import java.util.List;
 
 //TODO Test async changes.
@@ -22,9 +22,11 @@ import java.util.List;
 public class Sell implements CommandExecutor {
 
     private Main plugin;
+    private DatabaseManager db;
 
     public Sell(final Main instance) {
         plugin = instance;
+        db = plugin.getSQL();
     }
 
     @Override
@@ -117,7 +119,7 @@ public class Sell implements CommandExecutor {
             }
         }
 
-        // Check if the item is Matieral.AIR (aka nothing)
+        // Check if the item is Material.AIR (aka nothing)
         if (item == null || item.equals(Material.AIR)) {
             ChatUtils.wrongItem(player, "AIR");
             return false;
@@ -133,7 +135,7 @@ public class Sell implements CommandExecutor {
         // Check if offer already exists in database
         // If so, update existing offer with new amount and price
         // Otherwise, make new offer and insert into db
-        doGetSellerOffersAsync(player.getUniqueId().toString(), item.toString(), new Callback<List<Offer>>() {
+        db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new Callback<List<Offer>>() {
             @Override
             public void onSuccess(List<Offer> result) {
                 List<Offer> theOffers = result;
@@ -143,29 +145,32 @@ public class Sell implements CommandExecutor {
                 //If player has an existing offer for the same item, we need to "merge" the two offers.
                 //This is done by adding the amount the player wants to sell now with the existing amount they were
                 //already selling. The existing offer is then deleted,
-                if (theOffers.size() > 0) {
-                    for (Offer o : theOffers)
-                        existingAmount += o.amount;
 
-                    final int finalAmount = existingAmount;
+                for (Offer o : theOffers)
+                    existingAmount += o.amount;
 
-                    doUpdateOfferAsync(player.getUniqueId().toString(), item.toString(),
-                                        finalAmount, price, new Callback<Void>() {
-                        @Override
-                        public void onSuccess(Void result) {
-                            broadcastAndRemoveFromInv(player, item, finalAmount, price);
-                        }
+                final int finalAmount = existingAmount;
 
-                        @Override
-                        public void onFailure(Throwable cause) {
-                            handleSqlError(cause, player);
-                        }
-                    });
-                } else {
+                db.doAsyncUpdateOffer(player.getUniqueId().toString(), item.toString(),
+                                    finalAmount, price, new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        broadcastAndRemoveFromInv(player, item, finalAmount, price);
+                    }
 
+                    @Override
+                    public void onFailure(Throwable cause) {
+                        handleSqlError(cause, player);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable cause) {
+                if(cause instanceof OffersNotFoundException) {
                     final Offer offerToList = new Offer(player.getUniqueId().toString(), item.toString(), amountListed, price);
 
-                    doAddOfferAsync(offerToList, new Callback<Void>() {
+                    db.doAsyncAddOffer(offerToList, new Callback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
                             broadcastAndRemoveFromInv(player, item, amountListed, price);
@@ -176,11 +181,9 @@ public class Sell implements CommandExecutor {
                             handleSqlError(cause, player);
                         }
                     });
+                    return;
                 }
-            }
 
-            @Override
-            public void onFailure(Throwable cause) {
                 handleSqlError(cause, player);
             }
         });
@@ -201,69 +204,5 @@ public class Sell implements CommandExecutor {
         cause.printStackTrace();
         ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
         plugin.disablePlugin();
-    }
-
-    private void doGetSellerOffersAsync(final String playerUUID, final String itemName, final Callback<List<Offer>> callback) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<Offer> result = plugin.getSQL().getSellerOffers(playerUUID, itemName);
-
-                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.onSuccess(result);
-                        }
-                    });
-
-                } catch (SQLException | ClassNotFoundException throwables) {
-                    callback.onFailure(throwables);
-                }
-            }
-        });
-    }
-
-    private void doUpdateOfferAsync(final String playerUUID, final String itemName,
-                                    final int newQuantity, final double newPrice, final Callback<Void> callback) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    plugin.getSQL().updateQuantityAndPrice(playerUUID, itemName, newQuantity, newPrice);
-
-                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.onSuccess(null);
-                        }
-                    });
-
-                } catch (SQLException | ClassNotFoundException throwables) {
-                    callback.onFailure(throwables);
-                }
-            }
-        });
-    }
-
-    private void doAddOfferAsync(final Offer o, final Callback<Void> callback) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    plugin.getSQL().addOffer(o);
-
-                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.onSuccess(null);
-                        }
-                    });
-
-                } catch (SQLException | ClassNotFoundException throwables) {
-                    callback.onFailure(throwables);
-                }
-            }
-        });
     }
 }

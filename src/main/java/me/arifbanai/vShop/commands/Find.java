@@ -1,6 +1,5 @@
 package me.arifbanai.vShop.commands;
 
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
@@ -9,7 +8,6 @@ import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -17,11 +15,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
 
 public class Find implements CommandExecutor {
 
@@ -141,10 +135,7 @@ public class Find implements CommandExecutor {
 									ChatUtils.sendError(player, "IDLogger couldn't get the players name. Please alert admins");
 								}
 
-								cause.printStackTrace();
-								ChatUtils.sendError(player,
-										"An SQLException occured. Please alert admins. vShop shutting down.");
-								plugin.disablePlugin();
+								handleSqlError(cause, player);
 							}
 						});
 					}
@@ -157,9 +148,7 @@ public class Find implements CommandExecutor {
 						return;
 					}
 
-					cause.printStackTrace();
-					ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-					plugin.disablePlugin();
+					handleSqlError(cause, player);
 				}
 			});
 
@@ -169,4 +158,9 @@ public class Find implements CommandExecutor {
 		return false;
 	}
 
+	private void handleSqlError(Throwable cause, Player player) {
+		cause.printStackTrace();
+		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
+		plugin.disablePlugin();
+	}
 }

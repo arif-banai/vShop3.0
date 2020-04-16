@@ -14,6 +14,10 @@ public class ConfigManager {
 		return plugin.getConfig().getBoolean("broadcast-offers", true);
 	}
 
+	public boolean logTransactions() {
+		return plugin.getConfig().getBoolean("log-transactions", false);
+	}
+
 	public boolean usingMySQL() {
 		return plugin.getConfig().getBoolean("using-mysql", false);
 	}

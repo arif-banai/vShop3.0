@@ -192,20 +192,22 @@ public class Buy implements CommandExecutor {
 							notifySeller(onlineSeller, player.getName(), canBuy, item, cost);
 						}
 
-						// Record the transaction
-						Transaction t = new Transaction(o.sellerUUID, player.getUniqueId().toString(), o.textID, canBuy, cost);
+						// Record the transaction if enabled in the config
+						if(plugin.getConfigManager().logTransactions()) {
+							Transaction t = new Transaction(o.sellerUUID, player.getUniqueId().toString(), o.textID, canBuy, cost);
 
-						db.doAsyncLogTransaction(t, new Callback<Void>() {
-							@Override
-							public void onSuccess(Void result) {
+							db.doAsyncLogTransaction(t, new Callback<Void>() {
+								@Override
+								public void onSuccess(Void result) {
 
-							}
+								}
 
-							@Override
-							public void onFailure(Throwable cause) {
-								handleSqlError(cause, player);
-							}
-						});
+								@Override
+								public void onFailure(Throwable cause) {
+									handleSqlError(cause, player);
+								}
+							});
+						}
 
 						// Stop if the player has bought enough items
 						if (bought >= desiredAmount) {

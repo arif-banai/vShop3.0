@@ -2,11 +2,9 @@ package me.huskehhh.bukkitSQL.mysql;
 
 import me.huskehhh.bukkitSQL.Database;
 import org.bukkit.plugin.Plugin;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 
 /**
  * Connects to and uses a MySQL database

@@ -1,9 +1,10 @@
 package me.arifbanai.vShop.commands;
 
+import me.arifbanai.idLogger.exceptions.PlayerNotIDLoggedException;
+import me.arifbanai.idLogger.interfaces.IDLoggerCallback;
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
-import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
-import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
@@ -64,12 +65,12 @@ public class Stock implements CommandExecutor {
 					start = 1;
 				}
 
-				db.doAsyncUUIDLookup(args[0], new Callback<String>() {
+				plugin.getIDLogger().doAsyncUUIDLookup(args[0], new IDLoggerCallback<String>() {
 					@Override
 					public void onSuccess(String result) {
 						String sellerUUID = result;
 
-						db.doAsyncGetOffersBySeller(sellerUUID, new Callback<List<Offer>>() {
+						db.doAsyncGetOffersBySeller(sellerUUID, new VShopCallback<List<Offer>>() {
 							@Override
 							public void onSuccess(List<Offer> result) {
 								List<Offer> offers = result;
@@ -109,7 +110,7 @@ public class Stock implements CommandExecutor {
 					@Override
 					public void onFailure(Throwable cause) {
 
-						if(cause instanceof PlayerNotFoundException) {
+						if(cause instanceof PlayerNotIDLoggedException) {
 							ChatUtils.sendError(player, "Player " + args[0] + " not found.");
 							return;
 						}

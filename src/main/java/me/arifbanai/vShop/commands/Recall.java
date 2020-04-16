@@ -2,7 +2,7 @@ package me.arifbanai.vShop.commands;
 
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
-import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
@@ -13,8 +13,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -80,7 +78,7 @@ public class Recall implements CommandExecutor {
 			}
 
 			//Get offer from the database
-			db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new Callback<List<Offer>>() {
+			db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offers = result;
@@ -94,7 +92,7 @@ public class Recall implements CommandExecutor {
 					final int finalTotal = total;
 
 					//Attempt to remove the offers made by the player for the item
-					db.doAsyncDeleteOffer(player.getUniqueId().toString(), item.toString(), new Callback<Void>() {
+					db.doAsyncDeleteOffer(player.getUniqueId().toString(), item.toString(), new VShopCallback<Void>() {
 						@Override
 						public void onSuccess(Void result) {
 							// Create a new ItemStack for the item recalled, with the total amount of items removed

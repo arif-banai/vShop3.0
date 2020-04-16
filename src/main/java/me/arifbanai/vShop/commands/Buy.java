@@ -2,7 +2,7 @@ package me.arifbanai.vShop.commands;
 
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
-import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.objects.Transaction;
@@ -97,7 +97,7 @@ public class Buy implements CommandExecutor {
 
 			final String itemID = item.toString();
 
-			db.doAsyncGetItemOffers(itemID, new Callback<List<Offer>>() {
+			db.doAsyncGetItemOffers(itemID, new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offers = result;
@@ -148,7 +148,7 @@ public class Buy implements CommandExecutor {
 
 						if(canBuyWholeOffer) {
 							//If player can buy entire offer, delete the offer.
-							db.doAsyncDeleteOffer(o.sellerUUID, item.toString(), new Callback<Void>() {
+							db.doAsyncDeleteOffer(o.sellerUUID, item.toString(), new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 
@@ -162,7 +162,7 @@ public class Buy implements CommandExecutor {
 						} else {
 							//If the player can't buy the entire offer, update the offer to set how much is left.
 							//Variable <amountLeft> will always be initialized if you reach this branch
-							db.doAsyncUpdateOfferQuantity(o.sellerUUID, o.textID, amountLeft, new Callback<Void>() {
+							db.doAsyncUpdateOfferQuantity(o.sellerUUID, o.textID, amountLeft, new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 
@@ -196,7 +196,7 @@ public class Buy implements CommandExecutor {
 						if(plugin.getConfigManager().logTransactions()) {
 							Transaction t = new Transaction(o.sellerUUID, player.getUniqueId().toString(), o.textID, canBuy, cost);
 
-							db.doAsyncLogTransaction(t, new Callback<Void>() {
+							db.doAsyncLogTransaction(t, new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 

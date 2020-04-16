@@ -1,16 +1,14 @@
 package me.huskehhh.bukkitSQL;
 
 import org.bukkit.plugin.Plugin;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-
 /**
  * Connects to and uses a MySQL database
- * 
+ *
  * @author -_Husky_-
  * @author tips48
  */

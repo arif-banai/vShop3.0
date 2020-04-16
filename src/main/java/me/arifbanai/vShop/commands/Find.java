@@ -1,9 +1,10 @@
 package me.arifbanai.vShop.commands;
 
+import me.arifbanai.idLogger.exceptions.PlayerNotIDLoggedException;
+import me.arifbanai.idLogger.interfaces.IDLoggerCallback;
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
-import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
-import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
@@ -95,7 +96,7 @@ public class Find implements CommandExecutor {
 				page = 1;
 			}
 
-			db.doAsyncGetItemOffers(item.toString(), new Callback<List<Offer>>() {
+			db.doAsyncGetItemOffers(item.toString(), new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offersByItem = result;
@@ -119,7 +120,7 @@ public class Find implements CommandExecutor {
 					for (int count = start; count < offersByItem.size() && count < start + 9; count++) {
 						Offer o = offersByItem.get(count);
 
-						db.doAsyncNameLookup(o.sellerUUID, new Callback<String>() {
+						plugin.getIDLogger().doAsyncNameLookup(o.sellerUUID, new IDLoggerCallback<String>() {
 							@Override
 							public void onSuccess(String result) {
 								String sellerName = result;
@@ -131,7 +132,8 @@ public class Find implements CommandExecutor {
 							@Override
 							public void onFailure(Throwable cause) {
 
-								if(cause instanceof PlayerNotFoundException) {
+								// USE THE RIGHT EXCEPTION (IDLogger exception, this is an IDLogger method)
+								if(cause instanceof PlayerNotIDLoggedException) {
 									ChatUtils.sendError(player, "IDLogger couldn't get the players name. Please alert admins");
 								}
 

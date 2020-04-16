@@ -2,7 +2,7 @@ package me.arifbanai.vShop.commands;
 
 import me.arifbanai.vShop.Main;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
-import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.database.DatabaseManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
@@ -135,7 +135,7 @@ public class Sell implements CommandExecutor {
         // Check if offer already exists in database
         // If so, update existing offer with new amount and price
         // Otherwise, make new offer and insert into db
-        db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new Callback<List<Offer>>() {
+        db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new VShopCallback<List<Offer>>() {
             @Override
             public void onSuccess(List<Offer> result) {
                 List<Offer> theOffers = result;
@@ -152,7 +152,7 @@ public class Sell implements CommandExecutor {
                 final int finalAmount = existingAmount;
 
                 db.doAsyncUpdateOffer(player.getUniqueId().toString(), item.toString(),
-                                    finalAmount, price, new Callback<Void>() {
+                                    finalAmount, price, new VShopCallback<Void>() {
                     @Override
                     public void onSuccess(Void result) {
                         broadcastAndRemoveFromInv(player, item, finalAmount, price);
@@ -170,7 +170,7 @@ public class Sell implements CommandExecutor {
                 if(cause instanceof OffersNotFoundException) {
                     final Offer offerToList = new Offer(player.getUniqueId().toString(), item.toString(), amountListed, price);
 
-                    db.doAsyncAddOffer(offerToList, new Callback<Void>() {
+                    db.doAsyncAddOffer(offerToList, new VShopCallback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
                             broadcastAndRemoveFromInv(player, item, amountListed, price);

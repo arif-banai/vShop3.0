@@ -2,8 +2,7 @@ package me.arifbanai.vShop.managers.database;
 
 import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
-import me.arifbanai.vShop.exceptions.PlayerNotFoundException;
-import me.arifbanai.vShop.interfaces.Callback;
+import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.objects.Transaction;
 import me.huskehhh.bukkitSQL.Database;
@@ -204,7 +203,7 @@ public abstract class DatabaseManager {
 		return Transaction.listTransactions(safeStatement.executeQuery());
 	}
 
-	public void doAsyncAddOffer(final Offer o, final Callback<Void> callback) {
+	public void doAsyncAddOffer(final Offer o, final VShopCallback<Void> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -214,18 +213,18 @@ public abstract class DatabaseManager {
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
 						public void run() {
-							callback.onSuccess(null);
+							VShopCallback.onSuccess(null);
 						}
 					});
 
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
-	public void doAsyncGetItemOffers(final String itemName, final Callback<List<Offer>> callback) {
+	public void doAsyncGetItemOffers(final String itemName, final VShopCallback<List<Offer>> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -237,22 +236,22 @@ public abstract class DatabaseManager {
 						public void run() {
 
 							if (offersByItem == null || offersByItem.size() == 0) {
-								callback.onFailure(new OffersNotFoundException());
+								VShopCallback.onFailure(new OffersNotFoundException());
 								return;
 							}
 
-							callback.onSuccess(offersByItem);
+							VShopCallback.onSuccess(offersByItem);
 						}
 					});
 
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
-	public void doAsyncGetOffersBySeller(final String playerUUID, final Callback<List<Offer>> callback) {
+	public void doAsyncGetOffersBySeller(final String playerUUID, final VShopCallback<List<Offer>> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -264,22 +263,22 @@ public abstract class DatabaseManager {
 						public void run() {
 
 							if(offersBySellerUUID.size() == 0) {
-								callback.onFailure(new OffersNotFoundException());
+								VShopCallback.onFailure(new OffersNotFoundException());
 								return;
 							}
 
-							callback.onSuccess(offersBySellerUUID);
+							VShopCallback.onSuccess(offersBySellerUUID);
 						}
 					});
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
 	public void doAsyncGetOfferBySellerForItem(final String playerUUID, final String itemID,
-											   final Callback<List<Offer>> callback) {
+											   final VShopCallback<List<Offer>> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -290,22 +289,22 @@ public abstract class DatabaseManager {
 						@Override
 						public void run() {
 							if(offersBySellerForItem.size() == 0) {
-								callback.onFailure(new OffersNotFoundException());
+								VShopCallback.onFailure(new OffersNotFoundException());
 								return;
 							}
 
-							callback.onSuccess(offersBySellerForItem);
+							VShopCallback.onSuccess(offersBySellerForItem);
 						}
 					});
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
 	public void doAsyncUpdateOfferQuantity(final String playerUUID, final String itemName,
-								   final int newQuantity, final Callback<Void> callback) {
+								   final int newQuantity, final VShopCallback<Void> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -315,19 +314,19 @@ public abstract class DatabaseManager {
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
 						public void run() {
-							callback.onSuccess(null);
+							VShopCallback.onSuccess(null);
 						}
 					});
 
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
 	public void doAsyncUpdateOffer(final String playerUUID, final String itemName,
-									final int newQuantity, final double newPrice, final Callback<Void> callback) {
+									final int newQuantity, final double newPrice, final VShopCallback<Void> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -337,18 +336,18 @@ public abstract class DatabaseManager {
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
 						public void run() {
-							callback.onSuccess(null);
+							VShopCallback.onSuccess(null);
 						}
 					});
 
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
-	public void doAsyncDeleteOffer(final String playerUUID, final String itemID, final Callback<Void> callback) {
+	public void doAsyncDeleteOffer(final String playerUUID, final String itemID, final VShopCallback<Void> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -358,17 +357,17 @@ public abstract class DatabaseManager {
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
 						public void run() {
-							callback.onSuccess(null);
+							VShopCallback.onSuccess(null);
 						}
 					});
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});
 	}
 
-	public void doAsyncLogTransaction(final Transaction t, final Callback<Void> callback) {
+	public void doAsyncLogTransaction(final Transaction t, final VShopCallback<Void> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -378,59 +377,11 @@ public abstract class DatabaseManager {
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
 						public void run() {
-							callback.onSuccess(null);
+							VShopCallback.onSuccess(null);
 						}
 					});
 				} catch (SQLException | ClassNotFoundException throwables) {
-					callback.onFailure(throwables);
-				}
-			}
-		});
-	}
-
-	public void doAsyncUUIDLookup(final String playerName, final Callback<String> callback) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-			@Override
-			public void run() {
-				try {
-					final String playerUUID = idLogger.getUUIDByName(playerName);
-					Bukkit.getScheduler().runTask(plugin, new Runnable() {
-						@Override
-						public void run() {
-							if(playerUUID == null) {
-								callback.onFailure(new PlayerNotFoundException());
-								return;
-							}
-
-							callback.onSuccess(playerUUID);
-						}
-					});
-				} catch (SQLException throwables) {
-					callback.onFailure(throwables);
-				}
-			}
-		});
-	}
-
-	public void doAsyncNameLookup(final String playerUUID, final Callback<String> callback) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-			@Override
-			public void run() {
-				try {
-					final String playerName = idLogger.getNameByUUID(playerUUID);
-					Bukkit.getScheduler().runTask(plugin, new Runnable() {
-						@Override
-						public void run() {
-							if(playerName == null) {
-								callback.onFailure(new PlayerNotFoundException());
-								return;
-							}
-
-							callback.onSuccess(playerName);
-						}
-					});
-				} catch (SQLException throwables) {
-					callback.onFailure(throwables);
+					VShopCallback.onFailure(throwables);
 				}
 			}
 		});

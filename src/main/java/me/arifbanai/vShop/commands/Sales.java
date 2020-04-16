@@ -16,6 +16,9 @@ import java.util.List;
 
 public class Sales implements CommandExecutor {
 
+	/*
+
+	 */
 	private Main plugin;
 
 	public Sales(final Main instance) {
@@ -28,16 +31,16 @@ public class Sales implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("sales")) {
 			// TODO Implement /sales <playerName>
-			
+
 			if (!(sender instanceof Player)) {
 				ChatUtils.denyConsole(sender);
 				return false;
 			}
-			
+
 			Player player = (Player) sender;
-			
+
 			int page = 1;
-			
+
 			if(args.length > 1) {
 				ChatUtils.sendError(player, "Proper usage is /sales [pageNumber]");
 				return false;
@@ -48,11 +51,11 @@ public class Sales implements CommandExecutor {
 					return false;
 				}
 			}
-			
-			
+
+
 			// Prepare the list of transactions
 			List<Transaction> transactions = new ArrayList<Transaction>();
-			
+
 			try {
 				// Find all transactions where the player is the seller
 				transactions = plugin.getSQL().getTransactionsBySeller(player.getUniqueId().toString());
@@ -61,8 +64,8 @@ public class Sales implements CommandExecutor {
 				ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
 				plugin.disablePlugin();
 			}
-			
-			
+
+
 			// Check if ArrayList of transactions is empty
 			if (transactions == null || transactions.size() == 0) {
 				ChatUtils.sendError(player, "You have not sold anything.");
@@ -90,11 +93,14 @@ public class Sales implements CommandExecutor {
 
 				// Format the transaction and send to player
 				try {
-					player.sendMessage(ChatUtils.formatYourTransaction( 
-																	plugin.getIDLogger().getNameByUUID(t.buyerUUID), 
+					//TODO Uncomment when bringing back Sales command (this causes an error)
+					/*
+					player.sendMessage(ChatUtils.formatYourTransaction( plugin.getIDLogger().getNameByUUID(t.buyerUUID),
 																	t.textID,
 																	t.amount,
 																	t.price));
+					 */
+
 				} catch (Exception e) {
 					e.printStackTrace();
 					ChatUtils.sendError(player,

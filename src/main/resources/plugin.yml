@@ -2,7 +2,7 @@ name: vShop
 main: me.arifbanai.vShop.Main
 author: smeef
 website: https://github.com/arif-banai
-version: 2.0
+version: 2.1
 description: A virtual shop, great for economy servers
 depend: [Vault,IDLogger]
 database: true

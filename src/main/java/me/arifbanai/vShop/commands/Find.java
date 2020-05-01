@@ -1,11 +1,12 @@
 package me.arifbanai.vShop.commands;
 
+import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.idLogger.exceptions.PlayerNotIDLoggedException;
 import me.arifbanai.idLogger.interfaces.IDLoggerCallback;
-import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.VShop;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.interfaces.VShopCallback;
-import me.arifbanai.vShop.managers.database.DatabaseManager;
+import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
@@ -16,23 +17,32 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class Find implements CommandExecutor {
 
-	private Main plugin;
-	private DatabaseManager db;
+	private final VShop plugin;
+	private final QueryManager queryManager;
+	private final IDLogger idLogger;
 
-	public Find(final Main instance) {
+	public Find(final VShop instance, final QueryManager queryManager, final IDLogger idLogger) {
 		plugin = instance;
-		db = plugin.getSQL();
+		this.queryManager = queryManager;
+		this.idLogger = idLogger;
 	}
 
-	@Override
-	/*
-	 * This command will find all offers for a certain item in the database The
-	 * command format is /find <item> [pageNumber]
+	/**
+	 * Find offers for some item
+	 * TODO javadocs!
+	 *
+	 * @param sender
+	 * @param cmd
+	 * @param label
+	 * @param args
+	 * @return
 	 */
+	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("find")) {
 			// Check if the sender is NOT an instance of Player
@@ -96,7 +106,7 @@ public class Find implements CommandExecutor {
 				page = 1;
 			}
 
-			db.doAsyncGetItemOffers(item.toString(), new VShopCallback<List<Offer>>() {
+			queryManager.doAsyncGetItemOffers(item.toString(), new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offersByItem = result;
@@ -120,7 +130,7 @@ public class Find implements CommandExecutor {
 					for (int count = start; count < offersByItem.size() && count < start + 9; count++) {
 						Offer o = offersByItem.get(count);
 
-						plugin.getIDLogger().doAsyncNameLookup(o.sellerUUID, new IDLoggerCallback<String>() {
+						idLogger.doAsyncNameLookup(o.sellerUUID, new IDLoggerCallback<String>() {
 							@Override
 							public void onSuccess(String result) {
 								String sellerName = result;
@@ -137,7 +147,7 @@ public class Find implements CommandExecutor {
 									ChatUtils.sendError(player, "IDLogger couldn't get the players name. Please alert admins");
 								}
 
-								handleSqlError(cause, player);
+								handleSqlError((SQLException) cause, player);
 							}
 						});
 					}
@@ -150,7 +160,7 @@ public class Find implements CommandExecutor {
 						return;
 					}
 
-					handleSqlError(cause, player);
+					handleSqlError((SQLException) cause, player);
 				}
 			});
 
@@ -160,9 +170,8 @@ public class Find implements CommandExecutor {
 		return false;
 	}
 
-	private void handleSqlError(Throwable cause, Player player) {
-		cause.printStackTrace();
+	private void handleSqlError(SQLException exception, Player player) {
 		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-		plugin.disablePlugin();
+		plugin.handleUnexpectedException(exception);
 	}
 }

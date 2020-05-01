@@ -1,9 +1,9 @@
 package me.arifbanai.vShop.commands;
 
-import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.VShop;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.interfaces.VShopCallback;
-import me.arifbanai.vShop.managers.database.DatabaseManager;
+import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.objects.Transaction;
 import me.arifbanai.vShop.utils.ChatUtils;
@@ -16,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -23,12 +24,12 @@ import java.util.UUID;
 
 public class Buy implements CommandExecutor {
 
-	private Main plugin;
-	private DatabaseManager db;
+	private final VShop plugin;
+	private final QueryManager queryManager;
 
-	public Buy(final Main instance) {
+	public Buy(final VShop instance, final QueryManager queryManager) {
 		plugin = instance;
-		db = plugin.getSQL();
+		this.queryManager = queryManager;
 	}
 
 	@Override
@@ -97,7 +98,7 @@ public class Buy implements CommandExecutor {
 
 			final String itemID = item.toString();
 
-			db.doAsyncGetItemOffers(itemID, new VShopCallback<List<Offer>>() {
+			queryManager.doAsyncGetItemOffers(itemID, new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offers = result;
@@ -141,14 +142,14 @@ public class Buy implements CommandExecutor {
 						cost = o.price * canBuy;
 
 						// Check if player does not have enough money
-						if (Main.economy.getBalance(player) < cost) {
+						if (VShop.economy.getBalance(player) < cost) {
 							ChatUtils.sendError(player, "You do not have enough money!");
 							return;
 						}
 
 						if(canBuyWholeOffer) {
 							//If player can buy entire offer, delete the offer.
-							db.doAsyncDeleteOffer(o.sellerUUID, item.toString(), new VShopCallback<Void>() {
+							queryManager.doAsyncDeleteOffer(o.sellerUUID, item.toString(), new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 
@@ -156,13 +157,13 @@ public class Buy implements CommandExecutor {
 
 								@Override
 								public void onFailure(Throwable cause) {
-									handleSqlError(cause, player);
+									handleSqlError((SQLException) cause, player);
 								}
 							});
 						} else {
 							//If the player can't buy the entire offer, update the offer to set how much is left.
 							//Variable <amountLeft> will always be initialized if you reach this branch
-							db.doAsyncUpdateOfferQuantity(o.sellerUUID, o.textID, amountLeft, new VShopCallback<Void>() {
+							queryManager.doAsyncUpdateOfferQuantity(o.sellerUUID, o.textID, amountLeft, new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 
@@ -170,7 +171,7 @@ public class Buy implements CommandExecutor {
 
 								@Override
 								public void onFailure(Throwable cause) {
-									handleSqlError(cause, player);
+									handleSqlError((SQLException) cause, player);
 								}
 							});
 						}
@@ -183,20 +184,20 @@ public class Buy implements CommandExecutor {
 						OfflinePlayer seller = plugin.getServer().getOfflinePlayer(UUID.fromString(o.sellerUUID));
 
 						// Send money from the buyer to the seller
-						Main.economy.withdrawPlayer(player, cost);
-						Main.economy.depositPlayer(seller, cost);
+						VShop.economy.withdrawPlayer(player, cost);
+						VShop.economy.depositPlayer(seller, cost);
 
 						// Send a message notifying the seller of a sale if they are online
 						if (seller.isOnline()) {
 							Player onlineSeller = (Player) seller;
-							notifySeller(onlineSeller, player.getName(), canBuy, item, cost);
+							ChatUtils.notifySeller(onlineSeller, player.getName(), canBuy, item, cost);
 						}
 
 						// Record the transaction if enabled in the config
-						if(plugin.getConfigManager().logTransactions()) {
+						if(plugin.getConfig().getBoolean("log-transactions", false)) {
 							Transaction t = new Transaction(o.sellerUUID, player.getUniqueId().toString(), o.textID, canBuy, cost);
 
-							db.doAsyncLogTransaction(t, new VShopCallback<Void>() {
+							queryManager.doAsyncLogTransaction(t, new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
 
@@ -204,7 +205,7 @@ public class Buy implements CommandExecutor {
 
 								@Override
 								public void onFailure(Throwable cause) {
-									handleSqlError(cause, player);
+									handleSqlError((SQLException) cause, player);
 								}
 							});
 						}
@@ -238,7 +239,7 @@ public class Buy implements CommandExecutor {
 						return;
 					}
 
-					handleSqlError(cause, player);
+					handleSqlError((SQLException) cause, player);
 				}
 			});
 
@@ -249,15 +250,9 @@ public class Buy implements CommandExecutor {
 		return false;
 	}
 
-	private void notifySeller(Player seller, String buyerName, int amount, Material item, double cost) {
-		ChatUtils.sendSuccess(seller, ChatUtils.formatSeller(buyerName) + " just bought "
-						+ ChatUtils.formatAmount(amount) + " " + ChatUtils.formatItem(item)
-						+ " for " + ChatUtils.formatPrice(cost));
+	private void handleSqlError(SQLException cause, Player player) {
+		ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
+		plugin.handleUnexpectedException(cause);
 	}
 
-	private void handleSqlError(Throwable cause, Player player) {
-		cause.printStackTrace();
-		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-		plugin.disablePlugin();
-	}
 }

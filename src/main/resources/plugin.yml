@@ -1,10 +1,10 @@
 name: vShop
-main: me.arifbanai.vShop.Main
+main: me.arifbanai.vShop.VShop
 author: smeef
 website: https://github.com/arif-banai
 version: ${project.version}
 description: A virtual shop, great for economy servers
-depend: [Vault,IDLogger]
+depend: [Vault, IDLogger]
 database: true
 api-version: 1.15
 commands:

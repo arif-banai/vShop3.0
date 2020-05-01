@@ -1,10 +1,12 @@
 broadcast-offers: true
 log-transactions: false
-using-mysql: false
-MySQL:
+using-sqlite: true
+db:
   host: localhost
   port: 3306
-  database: minecraft
+  schema: minecraft
   username: root
   password: password
-  
+  dialect: mysql
+# Valid dialects:
+# mysql

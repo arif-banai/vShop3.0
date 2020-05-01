@@ -4,6 +4,7 @@ import me.arifbanai.vShop.objects.Offer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import static org.bukkit.ChatColor.*;
 
@@ -68,6 +69,12 @@ public class ChatUtils {
 
 	public static void wrongItem(CommandSender sender, String itemName) {
 		sendError(sender, "What is \"" + itemName + "\" ?");
+	}
+
+	public static void notifySeller(Player seller, String buyerName, int amount, Material item, double cost) {
+		ChatUtils.sendSuccess(seller, ChatUtils.formatSeller(buyerName) + " just bought "
+				+ ChatUtils.formatAmount(amount) + " " + ChatUtils.formatItem(item)
+				+ " for " + ChatUtils.formatPrice(cost));
 	}
 
 	public static void broadcastOffer(String name, int amount, String textID, double price) {

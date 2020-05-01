@@ -5,7 +5,7 @@
 
 	<groupId>me.arifBanai</groupId>
 	<artifactId>vshop</artifactId>
-	<version>2.1</version>
+	<version>2.2</version>
 	<packaging>jar</packaging>
 
 	<name>vShop</name>
@@ -14,6 +14,7 @@
 	<url>https://github.com/arif-banai</url>
 	<properties>
 		<java.version>1.8</java.version>
+		<spigot.version>1.15.2-R0.1-SNAPSHOT</spigot.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -72,7 +73,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.15.2-R0.1-SNAPSHOT</version>
+			<version>${spigot.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -83,25 +84,17 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.19</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
-		<dependency>
-			<groupId>org.xerial</groupId>
-			<artifactId>sqlite-jdbc</artifactId>
-			<version>3.30.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>me.arifBanai</groupId>
+			<groupId>me.arifbanai</groupId>
 			<artifactId>idLogger</artifactId>
-			<version>1.2</version>
+			<version>1.5</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>me.arifbanai</groupId>
+			<artifactId>easypool</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 	</dependencies>

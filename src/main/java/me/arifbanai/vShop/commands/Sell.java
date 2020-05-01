@@ -1,9 +1,9 @@
 package me.arifbanai.vShop.commands;
 
-import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.VShop;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.interfaces.VShopCallback;
-import me.arifbanai.vShop.managers.database.DatabaseManager;
+import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import me.arifbanai.vShop.utils.InventoryUtils;
@@ -15,18 +15,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 
+import java.sql.SQLException;
 import java.util.List;
 
 //TODO Test async changes.
 
 public class Sell implements CommandExecutor {
 
-    private Main plugin;
-    private DatabaseManager db;
+    private VShop plugin;
+    private QueryManager queryManager;
 
-    public Sell(final Main instance) {
+    public Sell(final VShop instance, final QueryManager queryManager) {
         plugin = instance;
-        db = plugin.getSQL();
+        this.queryManager = queryManager;
     }
 
     @Override
@@ -135,7 +136,7 @@ public class Sell implements CommandExecutor {
         // Check if offer already exists in database
         // If so, update existing offer with new amount and price
         // Otherwise, make new offer and insert into db
-        db.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new VShopCallback<List<Offer>>() {
+        queryManager.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new VShopCallback<List<Offer>>() {
             @Override
             public void onSuccess(List<Offer> result) {
                 List<Offer> theOffers = result;
@@ -151,7 +152,7 @@ public class Sell implements CommandExecutor {
 
                 final int finalAmount = existingAmount;
 
-                db.doAsyncUpdateOffer(player.getUniqueId().toString(), item.toString(),
+                queryManager.doAsyncUpdateOffer(player.getUniqueId().toString(), item.toString(),
                                     finalAmount, price, new VShopCallback<Void>() {
                     @Override
                     public void onSuccess(Void result) {
@@ -160,7 +161,7 @@ public class Sell implements CommandExecutor {
 
                     @Override
                     public void onFailure(Throwable cause) {
-                        handleSqlError(cause, player);
+                        handleSqlError((SQLException) cause, player);
                     }
                 });
             }
@@ -170,7 +171,7 @@ public class Sell implements CommandExecutor {
                 if(cause instanceof OffersNotFoundException) {
                     final Offer offerToList = new Offer(player.getUniqueId().toString(), item.toString(), amountListed, price);
 
-                    db.doAsyncAddOffer(offerToList, new VShopCallback<Void>() {
+                    queryManager.doAsyncAddOffer(offerToList, new VShopCallback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
                             broadcastAndRemoveFromInv(player, item, amountListed, price);
@@ -178,13 +179,13 @@ public class Sell implements CommandExecutor {
 
                         @Override
                         public void onFailure(Throwable cause) {
-                            handleSqlError(cause, player);
+                            handleSqlError((SQLException) cause, player);
                         }
                     });
                     return;
                 }
 
-                handleSqlError(cause, player);
+                handleSqlError((SQLException) cause, player);
             }
         });
 
@@ -193,16 +194,15 @@ public class Sell implements CommandExecutor {
     }
 
     private void broadcastAndRemoveFromInv(Player p, Material item, int amount, double price) {
-        if (plugin.getConfigManager().broadcastOffers()) {
+        if (plugin.getConfig().getBoolean("broadcast-offers", true)) {
             ChatUtils.broadcastOffer(p.getName(), amount, item.toString(), price);
         }
         // Remove the items to be sold from the seller's inventory
         InventoryUtils.removeInventoryItems(p.getInventory(), item, amount);
     }
 
-    private void handleSqlError(Throwable cause, Player player) {
-        cause.printStackTrace();
-        ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-        plugin.disablePlugin();
+    private void handleSqlError(SQLException exception, Player player) {
+        ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
+        plugin.handleUnexpectedException(exception);
     }
 }

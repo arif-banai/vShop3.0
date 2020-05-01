@@ -1,11 +1,12 @@
 package me.arifbanai.vShop.commands;
 
+import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.idLogger.exceptions.PlayerNotIDLoggedException;
 import me.arifbanai.idLogger.interfaces.IDLoggerCallback;
-import me.arifbanai.vShop.Main;
+import me.arifbanai.vShop.VShop;
 import me.arifbanai.vShop.exceptions.OffersNotFoundException;
 import me.arifbanai.vShop.interfaces.VShopCallback;
-import me.arifbanai.vShop.managers.database.DatabaseManager;
+import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
@@ -15,16 +16,19 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class Stock implements CommandExecutor {
 
-	private Main plugin;
-	private DatabaseManager db;
+	private VShop plugin;
+	private QueryManager queryManager;
+	private IDLogger idLogger;
 
-	public Stock(final Main instance) {
+	public Stock(final VShop instance, final QueryManager queryManager, final IDLogger idLogger) {
 		plugin = instance;
-		db = plugin.getSQL();
+		this.queryManager = queryManager;
+		this.idLogger = idLogger;
 	}
 
 	@Override
@@ -65,12 +69,12 @@ public class Stock implements CommandExecutor {
 					start = 1;
 				}
 
-				plugin.getIDLogger().doAsyncUUIDLookup(args[0], new IDLoggerCallback<String>() {
+				idLogger.doAsyncUUIDLookup(args[0], new IDLoggerCallback<String>() {
 					@Override
 					public void onSuccess(String result) {
 						String sellerUUID = result;
 
-						db.doAsyncGetOffersBySeller(sellerUUID, new VShopCallback<List<Offer>>() {
+						queryManager.doAsyncGetOffersBySeller(sellerUUID, new VShopCallback<List<Offer>>() {
 							@Override
 							public void onSuccess(List<Offer> result) {
 								List<Offer> offers = result;
@@ -102,7 +106,7 @@ public class Stock implements CommandExecutor {
 									return;
 								}
 
-								handleSqlError(cause, player);
+								handleSqlError((SQLException) cause, player);
 							}
 						});
 					}
@@ -115,7 +119,7 @@ public class Stock implements CommandExecutor {
 							return;
 						}
 
-						handleSqlError(cause, player);
+						handleSqlError((SQLException) cause, player);
 					}
 				});
 
@@ -130,9 +134,8 @@ public class Stock implements CommandExecutor {
 		return false;
 	}
 
-	private void handleSqlError(Throwable cause, Player player) {
-		cause.printStackTrace();
-		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-		plugin.disablePlugin();
+	private void handleSqlError(SQLException exception, Player player) {
+		ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
+		plugin.handleUnexpectedException(exception);
 	}
 }

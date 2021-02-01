@@ -7,6 +7,7 @@ import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.objects.Transaction;
 import me.arifbanai.vShop.utils.ChatUtils;
+import me.arifbanai.vShop.utils.CommandUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -39,17 +40,11 @@ public class Buy implements CommandExecutor {
 	 */
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("buy")) {
-			// Check if the sender is NOT an instance of Player
-			if (!(sender instanceof Player)) {
-				ChatUtils.denyConsole(sender);
-				return false;
-			}
+			Player player;
 
-			Player player = (Player) sender;
-
-			// Check if the player DOES NOT have permission to use the command
-			if (!player.hasPermission(cmd.getPermission())) {
-				ChatUtils.noPermission(player);
+			if(CommandUtils.isPlayerWithPerms(sender, cmd)) {
+				player = (Player) sender;
+			} else {
 				return false;
 			}
 
@@ -98,7 +93,7 @@ public class Buy implements CommandExecutor {
 
 			final String itemID = item.toString();
 
-			queryManager.doAsyncGetItemOffers(itemID, new VShopCallback<List<Offer>>() {
+			queryManager.doAsyncGetItemOffers(itemID, maxPrice, new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offers = result;
@@ -109,12 +104,11 @@ public class Buy implements CommandExecutor {
 					double spent = 0;
 
 					for (Offer o : offers) {
-						// Skip if the price is higher than maxPrice
-						if (o.price > maxPrice) {
-							continue;
-						}
+
+						//The offers returned are always equal to or below max price
 
 						// Skip if the seller is the player attempting to purchase
+						// This should only ever be true exactly ONCE, no need to optimize SQL query here
 						if (o.sellerUUID.equals(player.getUniqueId().toString())) {
 							continue;
 						}
@@ -152,7 +146,7 @@ public class Buy implements CommandExecutor {
 							queryManager.doAsyncDeleteOffer(o.sellerUUID, item.toString(), new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
-
+									//Deleted the offer
 								}
 
 								@Override
@@ -166,7 +160,7 @@ public class Buy implements CommandExecutor {
 							queryManager.doAsyncUpdateOfferQuantity(o.sellerUUID, o.textID, amountLeft, new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
-
+									//Offer quantity updated
 								}
 
 								@Override
@@ -200,7 +194,7 @@ public class Buy implements CommandExecutor {
 							queryManager.doAsyncLogTransaction(t, new VShopCallback<Void>() {
 								@Override
 								public void onSuccess(Void result) {
-
+									//Transaction logged
 								}
 
 								@Override

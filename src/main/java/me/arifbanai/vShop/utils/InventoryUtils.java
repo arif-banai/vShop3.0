@@ -22,7 +22,9 @@ public class InventoryUtils {
 				} else {
 					if (amount == 0)
 						break;
-					
+
+					//TODO amount should never be less than 0?
+
 					items[i] = new ItemStack(Material.AIR);
 					amount = -1 * newAmount;
 				}

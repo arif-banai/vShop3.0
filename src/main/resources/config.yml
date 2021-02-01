@@ -1,5 +1,8 @@
+#redis would be useful if your server is huge and have many concurrent players
 broadcast-offers: true
 log-transactions: false
+using-webapp: false
+using-redis: false
 using-sqlite: true
 db:
   host: localhost

@@ -6,6 +6,7 @@ import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
+import me.arifbanai.vShop.utils.CommandUtils;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,8 +21,8 @@ import java.util.List;
 
 public class Recall implements CommandExecutor {
 
-	private VShop plugin;
-	private QueryManager queryManager;
+	private final VShop plugin;
+	private final QueryManager queryManager;
 
 	public Recall(final VShop instance, final QueryManager queryManager) {
 		plugin = instance;
@@ -36,17 +37,11 @@ public class Recall implements CommandExecutor {
 	 */
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("recall")) {
-			// Check if sender is NOT an instance of Player
-			if (!(sender instanceof Player)) {
-				ChatUtils.denyConsole(sender);
-				return false;
-			}
+			Player player;
 
-			Player player = (Player) sender;
-
-			// Check if player DOES NOT have permission to use the command
-			if (!player.hasPermission(cmd.getPermission())) {
-				ChatUtils.noPermission(player);
+			if(CommandUtils.isPlayerWithPerms(sender, cmd)) {
+				player = (Player) sender;
+			} else {
 				return false;
 			}
 

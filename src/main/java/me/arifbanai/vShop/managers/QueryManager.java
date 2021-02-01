@@ -14,6 +14,9 @@ import java.sql.*;
 import java.util.List;
 import java.util.logging.Level;
 
+//TODO Optimize SQL statements for efficiency
+//TODO javadoc
+
 public class QueryManager {
 
 	private final JavaPlugin plugin;
@@ -105,15 +108,45 @@ public class QueryManager {
 		}
 	}
 
-	public List<Offer> getItemOffers(String textID) throws SQLException {
+	/**
+	 * Returns a List of offers for some item, with an optional maxPrice
+	 * This is used when trying to buy offers or finding offers
+	 *
+	 * The maxPrice arg is used when buying items, as we only want
+	 * 	the offers that are selling BELOW or EQUAL TO maxPrice
+	 *
+	 * Offers are sorted in ascending order, lowest price first
+	 *
+	 * @param textID the item's textID
+	 * @param maxPrice optional - maximum price willing
+	 * @return
+	 * @throws SQLException
+	 */
+	public List<Offer> getItemOffers(String textID, float maxPrice) throws SQLException {
 		List<Offer> itemOffers;
 
-		String getItemOffersSQL = "SELECT * FROM stock WHERE textID = ? ORDER BY price ASC";
+		//TODO maybe separate into two different methods
+		//TODO getItemOffers and getItemOffersMaxPrice
+		//Modify SQL Query based if used for buying offers
+		String getItemOffersSQL = "SELECT * FROM stock " +
+									"WHERE textID = ? ";
 
+		if(maxPrice > 0) {
+			getItemOffersSQL += "AND price <= ? ";
+		}
+
+		getItemOffersSQL += "ORDER BY price ASC;";
+
+		// try-with-resource block closes the connection, preparedstatement, and result
 		try(Connection connection = dataSourceManager.getConnection();
 			PreparedStatement ps = connection.prepareStatement(getItemOffersSQL)
 		)  {
 			ps.setString(1, textID);
+
+			if(maxPrice > 0) {
+				ps.setFloat(2, maxPrice);
+			}
+
 			try(ResultSet rs = ps.executeQuery()) {
 				itemOffers = Offer.listOffers(rs);
 			}
@@ -122,10 +155,37 @@ public class QueryManager {
 		return itemOffers;
 	}
 
+	/**
+	 * TODO Is this really necessary?
+	 * TODO Yes
+	 *
+	 * Used in calculating how many pages there are for displaying offers to users
+	 * @param textID the textID of the item
+	 * @return the number of offers for an item
+	 * @throws SQLException
+	 */
+	public int getAmountOfItemOffers(String textID) throws SQLException {
+		int amountOfOffersForItem;
+
+		String amountOfOffersForItemSQL = "SELECT COUNT(*) FROM stock AS total WHERE textID = ?";
+
+		try(Connection connection = dataSourceManager.getConnection();
+			PreparedStatement ps = connection.prepareStatement(amountOfOffersForItemSQL)
+		)  {
+			ps.setString(1, textID);
+			try(ResultSet rs = ps.executeQuery()) {
+				rs.next();
+				amountOfOffersForItem = rs.getInt("total");
+			}
+		}
+
+		return amountOfOffersForItem;
+	}
+
 	public List<Offer> searchBySeller(String sellerUUID) throws SQLException {
 		List<Offer> sellerOffers;
 
-		String searchBySellerSQL = "SELECT * FROM stock WHERE " + "sellerUUID = ?";
+		String searchBySellerSQL = "SELECT * FROM stock WHERE sellerUUID = ?";
 		try(Connection connection = dataSourceManager.getConnection();
 			PreparedStatement ps = connection.prepareStatement(searchBySellerSQL)
 		)  {
@@ -136,22 +196,6 @@ public class QueryManager {
 		}
 
 		return sellerOffers;
-	}
-
-	public List<Offer> getPrices(String textID) throws SQLException {
-		List<Offer> offersPriceAsc;
-
-		String getOffersByItemPriceAscSQL = "SELECT * FROM stock WHERE " + "textID = ? ORDER BY price ASC LIMIT 0,10";
-		try(Connection connection = dataSourceManager.getConnection();
-			PreparedStatement ps = connection.prepareStatement(getOffersByItemPriceAscSQL)
-		)  {
-			ps.setString(1, textID);
-			try(ResultSet rs = ps.executeQuery()) {
-				offersPriceAsc = Offer.listOffers(rs);
-			}
-		}
-
-		return offersPriceAsc;
 	}
 
 	public List<Offer> getOfferBySellerForItem(String sellerUUID, String textID) throws SQLException {
@@ -238,6 +282,7 @@ public class QueryManager {
 	public List<Transaction> getTransactionsBySellerBuyer(String sellerUUID, String buyerUUID) throws SQLException {
 		List<Transaction> transactionsBetweenSellerAndBuyer;
 
+		//Order transactions between buyer and seller by bigger ID (Newest transactions first)
 		String getTransactionsBySellerBuyerSQL = "SELECT * FROM transactions WHERE sellerUUID = ? AND buyerUUID = ? "
 													+ "ORDER BY id DESC";
 		try(Connection connection = dataSourceManager.getConnection();
@@ -297,12 +342,12 @@ public class QueryManager {
 		});
 	}
 
-	public void doAsyncGetItemOffers(final String itemName, final VShopCallback<List<Offer>> VShopCallback) {
+	public void doAsyncGetItemOffers(final String itemName, final float maxPrice, final VShopCallback<List<Offer>> VShopCallback) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
 			@Override
 			public void run() {
 				try {
-					final List<Offer> offersByItem = getItemOffers(itemName);
+					final List<Offer> offersByItem = getItemOffers(itemName, maxPrice);
 
 					Bukkit.getScheduler().runTask(plugin, new Runnable() {
 						@Override
@@ -500,7 +545,7 @@ public class QueryManager {
 				+ ");";
 
 		String createTransactionsTable = "CREATE TABLE IF NOT EXISTS transactions ("
-				+ "id INT NOT NULL,"
+				+ "id INTEGER NOT NULL,"
 				+ "sellerUUID VARCHAR(40) NOT NULL,"
 				+ "buyerUUID VARCHAR(40) NOT NULL,"
 				+ "textID VARCHAR(255) NOT NULL,"

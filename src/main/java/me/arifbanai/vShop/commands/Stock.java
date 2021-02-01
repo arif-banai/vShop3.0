@@ -9,6 +9,7 @@ import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
+import me.arifbanai.vShop.utils.CommandUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -38,17 +39,12 @@ public class Stock implements CommandExecutor {
 	 */
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("stock")) {
-			// Check if the sender is NOT an instance of Player
-			if (!(sender instanceof Player)) {
-				ChatUtils.denyConsole(sender);
-				return false;
-			}
 
-			Player player = (Player) sender;
+			Player player;
 
-			// Check if the player DOES NOT have permission to use the command
-			if (!player.hasPermission(cmd.getPermission())) {
-				ChatUtils.noPermission(player);
+			if(CommandUtils.isPlayerWithPerms(sender, cmd)) {
+				player = (Player) sender;
+			} else {
 				return false;
 			}
 
@@ -138,4 +134,5 @@ public class Stock implements CommandExecutor {
 		ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
 		plugin.handleUnexpectedException(exception);
 	}
+
 }

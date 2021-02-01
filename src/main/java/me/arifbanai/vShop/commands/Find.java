@@ -9,6 +9,7 @@ import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
+import me.arifbanai.vShop.utils.CommandUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -45,17 +46,11 @@ public class Find implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("find")) {
-			// Check if the sender is NOT an instance of Player
-			if (!(sender instanceof Player)) {
-				ChatUtils.denyConsole(sender);
-				return false;
-			}
+			Player player;
 
-			Player player = (Player) sender;
-
-			// Check if the player DOES NOT have permission to use the command
-			if (!player.hasPermission(cmd.getPermission())) {
-				ChatUtils.noPermission(player);
+			if(CommandUtils.isPlayerWithPerms(sender, cmd)) {
+				player = (Player) sender;
+			} else {
 				return false;
 			}
 
@@ -106,14 +101,17 @@ public class Find implements CommandExecutor {
 				page = 1;
 			}
 
-			queryManager.doAsyncGetItemOffers(item.toString(), new VShopCallback<List<Offer>>() {
+			queryManager.doAsyncGetItemOffers(item.toString(), 0, new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
 					List<Offer> offersByItem = result;
 
-					int pageNumber = page;
+					//TODO Modify SQL query to return only the offers on the current page
+					//TODO This is used in Find and Stock commands
+					//TODO use two queries, query for offers size and query for offers needed to display
 
 					// Prepare the page format for the chat window in-game
+					int pageNumber = page;
 					int start = (pageNumber - 1) * 9;
 					int pages = offersByItem.size() / 9 + 1;
 					if (pageNumber > pages) {

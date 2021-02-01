@@ -1,12 +1,14 @@
 <component name="libraryTable">
   <library name="Maven: me.arifbanai:idLogger:1.5">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/me/arifbanai/IDLogger/1.5/idlogger-1.5.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/me/arifbanai/idLogger/1.5/idlogger-1.5.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$MAVEN_REPOSITORY$/me/arifbanai/idLogger/1.5/idLogger-1.5-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/me/arifbanai/idLogger/1.5/idLogger-1.5-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/me/arifbanai/idLogger/1.5/idLogger-1.5-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/me/arifbanai/idLogger/1.5/idLogger-1.5-sources.jar!/" />
     </SOURCES>
   </library>

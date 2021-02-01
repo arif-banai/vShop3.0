@@ -6,6 +6,7 @@ import me.arifbanai.vShop.interfaces.VShopCallback;
 import me.arifbanai.vShop.managers.QueryManager;
 import me.arifbanai.vShop.objects.Offer;
 import me.arifbanai.vShop.utils.ChatUtils;
+import me.arifbanai.vShop.utils.CommandUtils;
 import me.arifbanai.vShop.utils.InventoryUtils;
 import me.arifbanai.vShop.utils.NumberUtils;
 import org.bukkit.Material;
@@ -22,8 +23,8 @@ import java.util.List;
 
 public class Sell implements CommandExecutor {
 
-    private VShop plugin;
-    private QueryManager queryManager;
+    private final VShop plugin;
+    private final QueryManager queryManager;
 
     public Sell(final VShop instance, final QueryManager queryManager) {
         plugin = instance;
@@ -40,17 +41,12 @@ public class Sell implements CommandExecutor {
         if (!cmd.getName().equalsIgnoreCase("sell")) {
             return false;
         }
-        // Check if the sender is NOT and instance of Player
-        if (!(sender instanceof Player)) {
-            ChatUtils.denyConsole(sender);
-            return false;
-        }
 
-        Player player = (Player) sender;
+        Player player;
 
-        // Check if the player has permission to use the command
-        if (!player.hasPermission(cmd.getPermission())) {
-            ChatUtils.noPermission(player);
+        if(CommandUtils.isPlayerWithPerms(sender, cmd)) {
+            player = (Player) sender;
+        } else {
             return false;
         }
 

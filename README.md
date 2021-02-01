@@ -3,6 +3,10 @@
 
 A virtual shop, accessible through commands. Fast and efficient.
 
+I use this project as a way to implement new concepts or technologies that I learn. I started this project when I was 15 and have been adding to it ever since.
+
+Right now, I'm working on a companion website that would allow a user to perform all the actions a player could perform in-game. I'll put a link to the repo once I start some work on it.
+
 **Dependencies:**
   - [IDLogger](https://github.com/arif-banai/IDLogger)
   - [Vault](https://www.spigotmc.org/resources/vault.34315/)

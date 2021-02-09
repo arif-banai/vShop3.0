@@ -6,13 +6,15 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Objects;
+
 import static org.bukkit.ChatColor.*;
 
 public class ChatUtils {
 
-	private static String prefixDatabase = "vShop_";
+	private static final String prefixDatabase = "vShop_";
 
-	private static String prefix = GRAY + "[" + GREEN + "vShop" + GRAY + "] " + RESET;
+	private static final String prefix = GRAY + "[" + GREEN + "vShop" + GRAY + "] " + RESET;
 
 	public static String getDatabasePrefix() {
 		return prefixDatabase;
@@ -40,11 +42,11 @@ public class ChatUtils {
 
 	public static String formatOffer(String name, int amount, String textID, double price) {
 		return formatSeller(name) + ": " + formatAmount(amount) + " "
-				+ formatItem(Material.getMaterial(textID)) + " for " + formatPrice(price) + " each.";
+				+ formatItem(Objects.requireNonNull(Material.getMaterial(textID))) + " for " + formatPrice(price) + " each.";
 	}
 	
 	public static String formatYourTransaction(String buyerName, String textID, int amount, double price) {
-		return formatSeller("You") + " sold " + formatAmount(amount) + " " + formatItem(Material.getMaterial(textID)) + " to " + formatBuyer(buyerName) + " for " + formatPrice(price);
+		return formatSeller("You") + " sold " + formatAmount(amount) + " " + formatItem(Objects.requireNonNull(Material.getMaterial(textID))) + " to " + formatBuyer(buyerName) + " for " + formatPrice(price);
 	}
 
 	public static void sendSuccess(CommandSender sender, String msg) {
@@ -83,5 +85,9 @@ public class ChatUtils {
 
 	public static void broadcastOffer(String name, Offer o) {
 		broadcastOffer(name, o.amount, o.textID, o.price);
+	}
+
+	public static void sendQueryError(Player player) {
+		sendError(player, "An Exception occurred while querying. Please alert admins. vShop shutting down.");
 	}
 }

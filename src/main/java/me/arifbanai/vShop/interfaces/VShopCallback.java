@@ -1,6 +1,8 @@
 package me.arifbanai.vShop.interfaces;
 
+
+//TODO Use a default method in the case where we do nothing when onSuccess() is called
 public interface VShopCallback<T> {
-    public void onSuccess(T result);
-    public void onFailure(Throwable cause);
+    void onSuccess(T result);
+    void onFailure(Exception cause);
 }

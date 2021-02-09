@@ -1,18 +1,8 @@
 package me.arifbanai.vShop.commands;
 
-import me.arifbanai.vShop.VShop;
-import me.arifbanai.vShop.objects.Transaction;
-import me.arifbanai.vShop.utils.ChatUtils;
-import me.arifbanai.vShop.utils.NumberUtils;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Sales implements CommandExecutor {
 
@@ -80,7 +70,7 @@ public class Sales implements CommandExecutor {
 				transactions = plugin.getSQL().getTransactionsBySeller(player.getUniqueId().toString());
 			} catch (SQLException | ClassNotFoundException e) {
 				e.printStackTrace();
-				ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
+				ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
 				plugin.disablePlugin();
 			}
 

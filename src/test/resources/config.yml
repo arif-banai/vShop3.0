@@ -1,0 +1,15 @@
+#redis would be useful if your server is huge and have many concurrent players
+broadcastOffers: true
+logTransactions: false
+usingWebapp: false
+usingRedis: false
+usingSQLite: false
+db:
+  host: localhost
+  port: 3306
+  schema: minecraft
+  username: root
+  password: #use System.getProperty(), pass password property at runtime using commandline
+  dialect: mysql
+# Valid dialects:
+# mysql

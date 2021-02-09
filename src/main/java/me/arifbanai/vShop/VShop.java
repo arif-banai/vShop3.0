@@ -5,7 +5,10 @@ import me.arifbanai.easypool.MySQLDataSourceManager;
 import me.arifbanai.easypool.SQLiteDataSourceManager;
 import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.vShop.commands.*;
+import me.arifbanai.vShop.exceptions.DataSourceSetupFailedException;
+import me.arifbanai.vShop.exceptions.EconomySetupFailedException;
 import me.arifbanai.vShop.managers.QueryManager;
+import me.arifbanai.vShop.managers.sql.SqlQueryManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,7 +16,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
 
 public class VShop extends JavaPlugin {
@@ -22,6 +24,7 @@ public class VShop extends JavaPlugin {
 
 	private IDLogger idLogger;
 	private DataSourceManager dataSourceManager;
+
 	private QueryManager queryManager;
 
 	@Override
@@ -36,21 +39,19 @@ public class VShop extends JavaPlugin {
 		idLogger = (IDLogger) Bukkit.getPluginManager().getPlugin("IDLogger");
 
 		if (!setupEconomy()) {
-			getLogger().info("Problem depending Vault. Disabling...");
-			getServer().getPluginManager().disablePlugin(this);
-			return;
+			handleUnexpectedException(new EconomySetupFailedException());
 		}
 
-		if(!initDataSourceManager()) {
-			handleUnexpectedException(new Exception("Failed to initialize DataSourceManager."));
+		if(!setupDataSourceManager()) {
+			handleUnexpectedException(new DataSourceSetupFailedException());
 		}
 
-		queryManager = new QueryManager(this, idLogger, dataSourceManager);
+		queryManager = new SqlQueryManager(this, dataSourceManager);
 
 		try {
 			queryManager.prepareDB();
-		} catch (SQLException sqlException) {
-			handleUnexpectedException(sqlException);
+		} catch (Exception e) {
+			handleUnexpectedException(e);
 		}
 
 		setupCommands();
@@ -59,9 +60,13 @@ public class VShop extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		getLogger().info("Disabling plugin...");
-		queryManager.close();
+		dataSourceManager.close();
 	}
 
+	/**
+	 * Setup Vault hook in provided economy system
+	 * @return true if successful, false otherwise
+	 */
 	private boolean setupEconomy() {
 		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager()
 				.getRegistration(net.milkbowl.vault.economy.Economy.class);
@@ -72,7 +77,11 @@ public class VShop extends JavaPlugin {
 		return (economy != null);
 	}
 
-	private boolean initDataSourceManager() {
+	/**
+	 * Setup the DSM with some RDBMS specified in config
+	 * @return true if setup was successful, false if failed
+	 */
+	private boolean setupDataSourceManager() {
 		FileConfiguration config = getConfig();
 		dataSourceManager = null;
 
@@ -99,6 +108,9 @@ public class VShop extends JavaPlugin {
 		return (dataSourceManager != null);
 	}
 
+	/**
+	 * Enable the commands
+	 */
 	private void setupCommands() {
 		getCommand("buy").setExecutor(new Buy(this, queryManager));
 		getCommand("sell").setExecutor(new Sell(this, queryManager));
@@ -110,6 +122,10 @@ public class VShop extends JavaPlugin {
 		//TODO more commands related to Transactions
 	}
 
+	/**
+	 * Log the error in the exception and disable the plugin
+	 * @param e The exception that caused a fatal error for the plugin
+	 */
 	public void handleUnexpectedException(Exception e) {
 		this.getLogger().severe(e.toString());
 		e.printStackTrace();

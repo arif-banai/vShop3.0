@@ -17,7 +17,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -78,13 +77,13 @@ public class Buy implements CommandExecutor {
 				return false;
 			}
 			
-			String itemLookup = args[1];
+			StringBuilder builder = new StringBuilder(args[1]);
 			
 			for(int i = 2; i < args.length - 1; i++) {
-				itemLookup += " " + args[i];
+				builder.append(" ").append(args[i]);
 			}
 			
-			Material item = Material.matchMaterial(itemLookup);
+			Material item = Material.matchMaterial(builder.toString());
 			
 			if (item == null || item.equals(Material.AIR)) {
 				ChatUtils.wrongItem(player, args[1]);
@@ -96,14 +95,13 @@ public class Buy implements CommandExecutor {
 			queryManager.doAsyncGetItemOffers(itemID, maxPrice, new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
-					List<Offer> offers = result;
 
 					// Used to keep track of how much the buyer has bought in total
 					int bought = 0;
 					// Used to keep track of how much the buyer has spent in total
 					double spent = 0;
 
-					for (Offer o : offers) {
+					for (Offer o : result) {
 
 						//The offers returned are always equal to or below max price
 
@@ -150,8 +148,8 @@ public class Buy implements CommandExecutor {
 								}
 
 								@Override
-								public void onFailure(Throwable cause) {
-									handleSqlError((SQLException) cause, player);
+								public void onFailure(Exception cause) {
+									handleFatalError(cause, player);
 								}
 							});
 						} else {
@@ -164,8 +162,8 @@ public class Buy implements CommandExecutor {
 								}
 
 								@Override
-								public void onFailure(Throwable cause) {
-									handleSqlError((SQLException) cause, player);
+								public void onFailure(Exception cause) {
+									handleFatalError(cause, player);
 								}
 							});
 						}
@@ -198,8 +196,8 @@ public class Buy implements CommandExecutor {
 								}
 
 								@Override
-								public void onFailure(Throwable cause) {
-									handleSqlError((SQLException) cause, player);
+								public void onFailure(Exception cause) {
+									handleFatalError(cause, player);
 								}
 							});
 						}
@@ -227,13 +225,13 @@ public class Buy implements CommandExecutor {
 				}
 
 				@Override
-				public void onFailure(Throwable cause) {
+				public void onFailure(Exception cause) {
 					if(cause instanceof OffersNotFoundException) {
 						ChatUtils.sendError(player, "There is no " + ChatUtils.formatItem(item) + " for sale.");
 						return;
 					}
 
-					handleSqlError((SQLException) cause, player);
+					handleFatalError(cause, player);
 				}
 			});
 
@@ -244,8 +242,8 @@ public class Buy implements CommandExecutor {
 		return false;
 	}
 
-	private void handleSqlError(SQLException cause, Player player) {
-		ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
+	private void handleFatalError(Exception cause, Player player) {
+		ChatUtils.sendQueryError(player);
 		plugin.handleUnexpectedException(cause);
 	}
 

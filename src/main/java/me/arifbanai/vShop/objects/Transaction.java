@@ -5,9 +5,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("CanBeFinal")
 public class Transaction {
 	
 	public int id;
+
 
 	public String sellerUUID;
 	public String buyerUUID;
@@ -28,7 +30,7 @@ public class Transaction {
 	}
 	
 	public static List<Transaction> listTransactions(ResultSet result) {
-		List<Transaction> transactionList = new ArrayList<Transaction>();
+		List<Transaction> transactionList = new ArrayList<>();
 
 		try {
 			while (result.next()) {
@@ -41,7 +43,7 @@ public class Transaction {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.out.println("An SQLException occured while listing transactions.");
+			System.out.println("An SQLException occurred while listing transactions.");
 			return null;
 		}
 		

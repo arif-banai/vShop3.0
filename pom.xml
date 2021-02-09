@@ -5,7 +5,7 @@
 
 	<groupId>me.arifBanai</groupId>
 	<artifactId>vshop</artifactId>
-	<version>2.2</version>
+	<version>2.5</version>
 	<packaging>jar</packaging>
 
 	<name>vShop</name>
@@ -14,7 +14,14 @@
 	<url>https://github.com/arif-banai</url>
 	<properties>
 		<java.version>1.8</java.version>
-		<spigot.version>1.15.2-R0.1-SNAPSHOT</spigot.version>
+
+		<spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
+		<vault.version>1.7</vault.version>
+		<idLogger.version>1.7</idLogger.version>
+		<easypool.version>1.0</easypool.version>
+
+		<compiler.version>3.8.1</compiler.version>
+		<shade.version>3.2.4</shade.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -26,7 +33,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>${compiler.version}</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
@@ -35,7 +42,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>${shade.version}</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -77,25 +84,43 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/net.milkbowl.vault/VaultAPI -->
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
 			<artifactId>VaultAPI</artifactId>
-			<version>1.7</version>
+			<version>${vault.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>me.arifbanai</groupId>
 			<artifactId>idLogger</artifactId>
-			<version>1.5</version>
+			<version>${idLogger.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>me.arifbanai</groupId>
 			<artifactId>easypool</artifactId>
-			<version>1.0</version>
+			<version>${easypool.version}</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.7.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>5.7.0</version>
+			<scope>test</scope>
+		</dependency>
+
 
 	</dependencies>
 </project>

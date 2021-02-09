@@ -18,8 +18,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
 import java.util.List;
+
+import static me.arifbanai.vShop.utils.ChatUtils.formatOffer;
 
 public class Find implements CommandExecutor {
 
@@ -33,16 +34,6 @@ public class Find implements CommandExecutor {
 		this.idLogger = idLogger;
 	}
 
-	/**
-	 * Find offers for some item
-	 * TODO javadocs!
-	 *
-	 * @param sender
-	 * @param cmd
-	 * @param label
-	 * @param args
-	 * @return
-	 */
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("find")) {
@@ -54,37 +45,41 @@ public class Find implements CommandExecutor {
 				return false;
 			}
 
-			String itemLookup;
-			boolean noPageArgument = false;
-			
 			// Check if the command is NOT formatted properly
 			if (args.length < 1) {
 				ChatUtils.sendError(player, "Proper usage is /find <item> [pageNumber]");
 				return false;
-			} else if(args.length == 1) {
-				itemLookup = args[0];
+			}
+
+			StringBuilder itemLookup = new StringBuilder(args[0]);
+			boolean noPageArgument = false;
+			
+			if(args.length == 1) {
 				noPageArgument = true;
 			} else {
-				itemLookup = args[0];
+				itemLookup = new StringBuilder(args[0]);
 				for(int i = 1; i < args.length - 1; i++) {
-					itemLookup += " " + args[i];
+					itemLookup.append(" ").append(args[i]);
 				}
-				
+
 				if(NumberUtils.getInteger(args[args.length - 1]) < 0) {
-					itemLookup += " " + args[args.length - 1];
+					itemLookup.append(" ").append(args[args.length - 1]);
 					noPageArgument = true;
 				}
 			}
 
 			// Perform item lookup against the Material enum
-			Material item = Material.matchMaterial(itemLookup);
+			Material item = Material.matchMaterial(itemLookup.toString());
 
 			// If item lookup failed, it will return null
 			// If the item is nothing, the ID will be 0 (Material.AIR aka nothing)
 			if (item == null || item.equals(Material.AIR)) {
-				ChatUtils.wrongItem(player, itemLookup);
+				ChatUtils.wrongItem(player, itemLookup.toString());
 				return false;
 			}
+
+			// Item lookup is expecting 'hand' to be an INVALID argument
+			// 	 as opposed to the Sell command
 			
 			// Prepare the page number, if args.length is less than 1, return false
 			// OR if args.length >= 2, the pageNumber may be in the last argument
@@ -101,64 +96,64 @@ public class Find implements CommandExecutor {
 				page = 1;
 			}
 
-			queryManager.doAsyncGetItemOffers(item.toString(), 0, new VShopCallback<List<Offer>>() {
+			queryManager.doAsyncGetAmountOfItemOffers(item.toString(), new VShopCallback<Integer>() {
 				@Override
-				public void onSuccess(List<Offer> result) {
-					List<Offer> offersByItem = result;
-
-					//TODO Modify SQL query to return only the offers on the current page
-					//TODO This is used in Find and Stock commands
-					//TODO use two queries, query for offers size and query for offers needed to display
-
+				public void onSuccess(Integer result) {
 					// Prepare the page format for the chat window in-game
+					int pages = result / 9 + 1;
 					int pageNumber = page;
-					int start = (pageNumber - 1) * 9;
-					int pages = offersByItem.size() / 9 + 1;
+					int start;
+
 					if (pageNumber > pages) {
 						start = 0;
 						pageNumber = 1;
+					} else {
+						start = (pageNumber - 1) * 9;
 					}
 
-					// Top border of the page
-					player.sendMessage(ChatColor.DARK_GRAY + "---------------" + ChatColor.GRAY + "Page (" + ChatColor.RED
-							+ pageNumber + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"
-							+ ChatColor.DARK_GRAY + "---------------");
+					printResultsHeadline(player, pageNumber, pages);
+					queryManager.doAsyncGetItemOffersOffset(item.toString(), start, new VShopCallback<List<Offer>>() {
 
-					// Start listing the offers
-					for (int count = start; count < offersByItem.size() && count < start + 9; count++) {
-						Offer o = offersByItem.get(count);
+						@Override
+						public void onSuccess(List<Offer> result) {
+							for(Offer o : result) {
+								idLogger.doAsyncNameLookup(o.sellerUUID, new IDLoggerCallback<String>() {
+									@Override
+									public void onSuccess(String result) {
+										String offerMessage = formatOffer(result, o.amount, o.textID, o.price);
+										player.sendMessage(offerMessage);
+									}
 
-						idLogger.doAsyncNameLookup(o.sellerUUID, new IDLoggerCallback<String>() {
-							@Override
-							public void onSuccess(String result) {
-								String sellerName = result;
+									@Override
+									public void onFailure(Exception cause) {
 
-								String offerMessage = ChatUtils.formatOffer(sellerName, o.amount, o.textID, o.price);
-								player.sendMessage(offerMessage);
+										// USE THE RIGHT EXCEPTION (IDLogger exception, this is an IDLogger method)
+										if(cause instanceof PlayerNotIDLoggedException) {
+											ChatUtils.sendError(player, "IDLogger couldn't get the seller's name. Please alert admins");
+										}
+
+										handleFatalError(cause, player);
+									}
+								});
 							}
+						}
 
-							@Override
-							public void onFailure(Throwable cause) {
-
-								// USE THE RIGHT EXCEPTION (IDLogger exception, this is an IDLogger method)
-								if(cause instanceof PlayerNotIDLoggedException) {
-									ChatUtils.sendError(player, "IDLogger couldn't get the players name. Please alert admins");
-								}
-
-								handleSqlError((SQLException) cause, player);
-							}
-						});
-					}
+						@Override
+						public void onFailure(Exception cause) {
+							//At this point, there should always be offers to find in the table
+							handleFatalError(cause, player);
+						}
+					});
 				}
 
 				@Override
-				public void onFailure(Throwable cause) {
+				public void onFailure(Exception cause) {
 					if(cause instanceof OffersNotFoundException) {
 						ChatUtils.sendError(player, "There is no " + ChatUtils.formatItem(item) + " for sale.");
 						return;
 					}
 
-					handleSqlError((SQLException) cause, player);
+					handleFatalError(cause, player);
 				}
 			});
 
@@ -168,8 +163,15 @@ public class Find implements CommandExecutor {
 		return false;
 	}
 
-	private void handleSqlError(SQLException exception, Player player) {
-		ChatUtils.sendError(player, "An SQLException occured. Please alert admins. vShop shutting down.");
-		plugin.handleUnexpectedException(exception);
+	private void printResultsHeadline(Player player, int pageNumber, int pages) {
+		// Top border of the page
+		player.sendMessage(ChatColor.DARK_GRAY + "---------------" + ChatColor.GRAY + "Page (" + ChatColor.RED
+				+ pageNumber + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"
+				+ ChatColor.DARK_GRAY + "---------------");
+	}
+
+	private void handleFatalError(Exception cause, Player player) {
+		ChatUtils.sendQueryError(player);
+		plugin.handleUnexpectedException(cause);
 	}
 }

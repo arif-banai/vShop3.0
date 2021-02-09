@@ -16,7 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.sql.SQLException;
 import java.util.List;
 
 //TODO Test async changes.
@@ -34,8 +33,8 @@ public class Sell implements CommandExecutor {
     @Override
     /*
      * This command will take an item a player has and attempt to place an amount of
-     * them in the database, with a price PER EACH item The command format is /sell
-     * <amount> <itemName/hand> <pricePerEach>
+     * them in the database, with a price PER EACH item The command format is
+     * /sell <amount> <itemName/hand> <pricePerEach>
      */
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("sell")) {
@@ -66,8 +65,8 @@ public class Sell implements CommandExecutor {
 
         final float price;
 
-        // If args.length is greater than 3, we should know this ahead of time
-        // 	for processing the item name
+        // If args.length is greater than 3,
+        // we should know this ahead of time for processing the item name
         // $$$ args.length > 3 when item name includes multiple words
         boolean bigItemName = false;
 
@@ -87,38 +86,28 @@ public class Sell implements CommandExecutor {
         PlayerInventory inv = player.getInventory();
 
         Material item;
+        String itemLookupStr = args[1];
 
-        // Check if item name is longer than one word
+        // If itemName is multiple args, combine them into one string
+        // Avoid concatenating strings, use StringBuilder
         if (bigItemName) {
+            StringBuilder builder = new StringBuilder(itemLookupStr);
 
-            String itemLookup;
-
-            itemLookup = args[1];
             for (int i = 2; i < args.length - 1; i++) {
-                itemLookup += " " + args[i];
+                builder.append(" ").append(args[i]);
             }
-
-            item = Material.matchMaterial(itemLookup);
-
-            // If the above method can't find the item, it will return null
-            if (item == null) {
-                ChatUtils.wrongItem(player, itemLookup);
-                return false;
-            }
-
-        } else {
-            if (args[1].equalsIgnoreCase("hand")) {
-                // Get item from main hand
-                item = inv.getItemInMainHand().getType();
-
-            } else {
-                item = Material.matchMaterial(args[1]);
-            }
+            itemLookupStr = builder.toString();
         }
 
-        // Check if the item is Material.AIR (aka nothing)
+        if(itemLookupStr.equalsIgnoreCase("hand")) {
+            item = inv.getItemInMainHand().getType();
+        } else {
+            item = Material.matchMaterial(itemLookupStr);
+        }
+
+        // Check if the item is invalid or Material.AIR (non-null empty item)
         if (item == null || item.equals(Material.AIR)) {
-            ChatUtils.wrongItem(player, "AIR");
+            ChatUtils.wrongItem(player, itemLookupStr);
             return false;
         }
 
@@ -135,15 +124,14 @@ public class Sell implements CommandExecutor {
         queryManager.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new VShopCallback<List<Offer>>() {
             @Override
             public void onSuccess(List<Offer> result) {
-                List<Offer> theOffers = result;
-
                 int existingAmount = amountListed;
 
-                //If player has an existing offer for the same item, we need to "merge" the two offers.
-                //This is done by adding the amount the player wants to sell now with the existing amount they were
-                //already selling. The existing offer is then deleted,
+                // If player has an existing offer for the same item, we need to "merge" the two offers.
+                // This is done by adding the amount the player wants to sell now,
+                //     with the existing amount they were already selling.
+                // The existing offer is then deleted
 
-                for (Offer o : theOffers)
+                for (Offer o : result)
                     existingAmount += o.amount;
 
                 final int finalAmount = existingAmount;
@@ -156,14 +144,14 @@ public class Sell implements CommandExecutor {
                     }
 
                     @Override
-                    public void onFailure(Throwable cause) {
-                        handleSqlError((SQLException) cause, player);
+                    public void onFailure(Exception cause) {
+                        handleFatalError(cause, player);
                     }
                 });
             }
 
             @Override
-            public void onFailure(Throwable cause) {
+            public void onFailure(Exception cause) {
                 if(cause instanceof OffersNotFoundException) {
                     final Offer offerToList = new Offer(player.getUniqueId().toString(), item.toString(), amountListed, price);
 
@@ -174,14 +162,14 @@ public class Sell implements CommandExecutor {
                         }
 
                         @Override
-                        public void onFailure(Throwable cause) {
-                            handleSqlError((SQLException) cause, player);
+                        public void onFailure(Exception cause) {
+                            handleFatalError(cause, player);
                         }
                     });
                     return;
                 }
 
-                handleSqlError((SQLException) cause, player);
+                handleFatalError(cause, player);
             }
         });
 
@@ -189,6 +177,13 @@ public class Sell implements CommandExecutor {
         return true;
     }
 
+    /**
+     * Broadcast the offer (if enabled in config) and remove the items from the seller
+     * @param p the player selling
+     * @param item the item being offered
+     * @param amount the amount of the item
+     * @param price the price PER ITEM
+     */
     private void broadcastAndRemoveFromInv(Player p, Material item, int amount, double price) {
         if (plugin.getConfig().getBoolean("broadcast-offers", true)) {
             ChatUtils.broadcastOffer(p.getName(), amount, item.toString(), price);
@@ -197,8 +192,8 @@ public class Sell implements CommandExecutor {
         InventoryUtils.removeInventoryItems(p.getInventory(), item, amount);
     }
 
-    private void handleSqlError(SQLException exception, Player player) {
-        ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
-        plugin.handleUnexpectedException(exception);
+    private void handleFatalError(Exception cause, Player player) {
+        ChatUtils.sendQueryError(player);
+        plugin.handleUnexpectedException(cause);
     }
 }

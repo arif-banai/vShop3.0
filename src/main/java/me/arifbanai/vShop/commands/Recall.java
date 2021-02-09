@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,20 +50,16 @@ public class Recall implements CommandExecutor {
 				return false;
 			}
 
-			String itemLookup;
+			StringBuilder itemLookup = new StringBuilder(args[0]);
 
 			if (args.length > 1) {
-				itemLookup = args[0];
-
 				for (int i = 1; i < args.length; i++) {
-					itemLookup += " " + args[i];
+					itemLookup.append(" ").append(args[i]);
 				}
-			} else {
-				itemLookup = args[0];
 			}
 
 			// Perform item lookup using Vault.Items API
-			Material item = Material.matchMaterial(itemLookup);
+			Material item = Material.matchMaterial(itemLookup.toString());
 
 			// The above method returns null if it cannot find the item
 			// The ID of the theItem will be 0 if the item is Material.AIR (aka nothing)
@@ -77,11 +72,10 @@ public class Recall implements CommandExecutor {
 			queryManager.doAsyncGetOfferBySellerForItem(player.getUniqueId().toString(), item.toString(), new VShopCallback<List<Offer>>() {
 				@Override
 				public void onSuccess(List<Offer> result) {
-					List<Offer> offers = result;
 
 					// total = sum of amount for each offer
 					int total = 0;
-					for (Offer o : offers) {
+					for (Offer o : result) {
 						total += o.amount;
 					}
 
@@ -107,20 +101,20 @@ public class Recall implements CommandExecutor {
 						}
 
 						@Override
-						public void onFailure(Throwable cause) {
-							handleSqlError((SQLException) cause, player);
+						public void onFailure(Exception cause) {
+							handleFatalError(cause, player);
 						}
 					});
 				}
 
 				@Override
-				public void onFailure(Throwable cause) {
+				public void onFailure(Exception cause) {
 					if (cause instanceof OffersNotFoundException) {
 						ChatUtils.sendError(player, "You don't have any " + ChatUtils.formatItem(item) + " for sale");
 						return;
 					}
 
-					handleSqlError((SQLException) cause, player);
+					handleFatalError(cause, player);
 				}
 			});
 
@@ -130,8 +124,8 @@ public class Recall implements CommandExecutor {
 		return false;
 	}
 
-	private void handleSqlError(SQLException exception, Player player) {
-		ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
-		plugin.handleUnexpectedException(exception);
+	private void handleFatalError(Exception cause, Player player) {
+		ChatUtils.sendQueryError(player);
+		plugin.handleUnexpectedException(cause);
 	}
 }

@@ -17,14 +17,13 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class Stock implements CommandExecutor {
 
-	private VShop plugin;
-	private QueryManager queryManager;
-	private IDLogger idLogger;
+	private final VShop plugin;
+	private final QueryManager queryManager;
+	private final IDLogger idLogger;
 
 	public Stock(final VShop instance, final QueryManager queryManager, final IDLogger idLogger) {
 		plugin = instance;
@@ -68,17 +67,15 @@ public class Stock implements CommandExecutor {
 				idLogger.doAsyncUUIDLookup(args[0], new IDLoggerCallback<String>() {
 					@Override
 					public void onSuccess(String result) {
-						String sellerUUID = result;
 
-						queryManager.doAsyncGetOffersBySeller(sellerUUID, new VShopCallback<List<Offer>>() {
+						queryManager.doAsyncGetOffersBySeller(result, new VShopCallback<List<Offer>>() {
 							@Override
 							public void onSuccess(List<Offer> result) {
-								List<Offer> offers = result;
 
 								// Prepare page formatting for chat window
 								int newStart = (start - 1) * 9;
 								int page = newStart / 9 + 1;
-								int pages = offers.size() / 9 + 1;
+								int pages = result.size() / 9 + 1;
 								if (page > pages) {
 									newStart = 0;
 									page = 1;
@@ -88,34 +85,34 @@ public class Stock implements CommandExecutor {
 								sender.sendMessage(ChatColor.DARK_GRAY + "---------------" + ChatColor.GRAY + "Page (" + ChatColor.RED
 										+ page + ChatColor.GRAY + " of " + ChatColor.RED + pages + ChatColor.GRAY + ")"
 										+ ChatColor.DARK_GRAY + "---------------");
-								for (int count = newStart; count < offers.size() && count < newStart + 9; count++) {
-									Offer o = offers.get(count);
+								for (int count = newStart; count < result.size() && count < newStart + 9; count++) {
+									Offer o = result.get(count);
 									sender.sendMessage(ChatUtils.formatOffer(args[0], o.amount, o.textID, o.price));
 								}
 
 							}
 
 							@Override
-							public void onFailure(Throwable cause) {
+							public void onFailure(Exception cause) {
 								if(cause instanceof OffersNotFoundException) {
 									ChatUtils.sendError(player, "This player isn't selling anything.");
 									return;
 								}
 
-								handleSqlError((SQLException) cause, player);
+								handleFatalError(cause, player);
 							}
 						});
 					}
 
 					@Override
-					public void onFailure(Throwable cause) {
+					public void onFailure(Exception cause) {
 
 						if(cause instanceof PlayerNotIDLoggedException) {
 							ChatUtils.sendError(player, "Player " + args[0] + " not found.");
 							return;
 						}
 
-						handleSqlError((SQLException) cause, player);
+						handleFatalError(cause, player);
 					}
 				});
 
@@ -130,9 +127,8 @@ public class Stock implements CommandExecutor {
 		return false;
 	}
 
-	private void handleSqlError(SQLException exception, Player player) {
-		ChatUtils.sendError(player, "An SQLException occurred. Please alert admins. vShop shutting down.");
-		plugin.handleUnexpectedException(exception);
+	private void handleFatalError(Exception cause, Player player) {
+		ChatUtils.sendQueryError(player);
+		plugin.handleUnexpectedException(cause);
 	}
-
 }

@@ -21,3 +21,14 @@ By default, all offers made by players are broadcast to every player on the serv
 This can also be configured in the config.yml
 
 Please reference this website (linked) for Minecraft 1.13 item names: https://minecraftitemids.com/
+
+##Changelog
+
+- ###2/9/2021
+    - Added JUnit tests for adding offers and finding the amount of offers for some item
+    - Abstracted query implementation from QueryManager using Queries and AsyncQueries 
+    - Updated javadoc in various places
+    - Created custom exceptions
+    - Code cleanup and refactoring
+    - Updated maven dependencies and plugins
+    - Updated vShop version to 2.5

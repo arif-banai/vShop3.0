@@ -22,9 +22,9 @@ This can also be configured in the config.yml
 
 Please reference this website (linked) for Minecraft 1.13 item names: https://minecraftitemids.com/
 
-##Changelog
+**Changelog**
 
-- ###2/9/2021
+- **2/9/2021**
     - Added JUnit tests for adding offers and finding the amount of offers for some item
     - Abstracted query implementation from QueryManager using Queries and AsyncQueries 
     - Updated javadoc in various places

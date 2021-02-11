@@ -3,6 +3,7 @@ package me.arifbanai.vShop;
 import me.arifbanai.easypool.DataSourceManager;
 import me.arifbanai.easypool.MySQLDataSourceManager;
 import me.arifbanai.easypool.SQLiteDataSourceManager;
+import me.arifbanai.easypool.enums.DataSourceType;
 import me.arifbanai.idLogger.IDLogger;
 import me.arifbanai.vShop.commands.*;
 import me.arifbanai.vShop.exceptions.DataSourceSetupFailedException;
@@ -45,11 +46,9 @@ public class VShop extends JavaPlugin {
 			handleUnexpectedException(new EconomySetupFailedException());
 		}
 
-		if(!setupDataSourceManager()) {
+		if(!setupDsmAndQueryManager()) {
 			handleUnexpectedException(new DataSourceSetupFailedException());
 		}
-
-		queryManager = new SqlQueryManager(this, dataSourceManager);
 
 		try {
 			queryManager.prepareDB();
@@ -62,7 +61,7 @@ public class VShop extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		getLogger().info("Disabling plugin...");
+		getLogger().info("Disabling datasource...");
 		dataSourceManager.close();
 	}
 
@@ -82,9 +81,10 @@ public class VShop extends JavaPlugin {
 
 	/**
 	 * Setup the DSM with some RDBMS specified in config
+	 * Initialize the {@link QueryManager} with the right DSM implementation
 	 * @return true if setup was successful, false if failed
 	 */
-	private boolean setupDataSourceManager() {
+	private boolean setupDsmAndQueryManager() {
 		FileConfiguration config = getConfig();
 		dataSourceManager = null;
 
@@ -92,6 +92,7 @@ public class VShop extends JavaPlugin {
 			String path = getDataFolder().toPath().toString();
 			try {
 				dataSourceManager = new SQLiteDataSourceManager(path, this.getName());
+				queryManager = new SqlQueryManager(this, dataSourceManager);
 			} catch (IOException e) {
 				handleUnexpectedException(e);
 			}
@@ -101,13 +102,26 @@ public class VShop extends JavaPlugin {
 			String schema = config.getString("db.schema");
 			String user = config.getString("db.username");
 			String password = config.getString("db.password");
-			//TODO String dialect = config.getString("db.dialect");
-			//TODO Use a switch to handle multiple sql dialects
+			String dialect = config.getString("db.dialect");
 
-			dataSourceManager = new MySQLDataSourceManager(host, port, schema, user, password);
+			if (dialect == null)  {
+				handleUnexpectedException(new DataSourceSetupFailedException("DB dialect is null"));
+				return false;
+			}
+
+			// Use a switch to handle multiple sql dialects
+			switch(DataSourceType.matchDialect(dialect)) {
+				case MYSQL:
+					dataSourceManager = new MySQLDataSourceManager(host, port, schema, user, password);
+					queryManager = new SqlQueryManager(this, dataSourceManager);
+					break;
+				default:
+					handleUnexpectedException(new DataSourceSetupFailedException("Unable to resolve DB dialect"));
+					break;
+			}
 		}
 
-		return (dataSourceManager != null);
+		return (dataSourceManager != null && queryManager != null);
 	}
 
 	/**

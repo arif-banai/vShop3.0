@@ -33,6 +33,9 @@ public class VShop extends JavaPlugin {
 		this.saveDefaultConfig();
 		this.saveResource("hikari.properties", false);
 
+		// Set location of hikari properties file to System property
+		// When HikariConfig default constructor is called, the properties file is loaded
+		// see https://github.com/brettwooldridge/HikariCP (ctrl+F system property)
 		String path = getDataFolder().toPath().toString();
 		System.setProperty("hikaricp.configurationFile", path + "/hikari.properties");
 
@@ -102,7 +105,6 @@ public class VShop extends JavaPlugin {
 			//TODO Use a switch to handle multiple sql dialects
 
 			dataSourceManager = new MySQLDataSourceManager(host, port, schema, user, password);
-
 		}
 
 		return (dataSourceManager != null);

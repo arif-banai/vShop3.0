@@ -32,3 +32,7 @@ Please reference this website (linked) for Minecraft 1.13 item names: https://mi
     - Code cleanup and refactoring
     - Updated maven dependencies and plugins
     - Updated vShop version to 2.5
+- **2/11/2021**
+    - Added comment explaining usage of "hikari.configurationFile" system property
+    - Updated .gitignore and removed ignored files
+    - Updated EasyPool dependency
